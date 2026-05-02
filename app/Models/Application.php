@@ -32,4 +32,9 @@ class Application extends Model
     {
         return $this->hasOne(Selection::class);
     }
+
+    public function requirementValues()
+    {
+        return $this->hasMany(ApplicationRequirementValue::class);
+    }
 }

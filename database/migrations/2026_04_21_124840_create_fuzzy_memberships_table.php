@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('fuzzy_memberships', function (Blueprint $table) {
             $table->id();
             $table->foreignId('criteria_id')->constrained('fuzzy_criteria')->cascadeOnDelete();
-            $table->enum('label', ['rendah','sedang','tinggi']);
+            $table->enum('label', ['rendah', 'sedang', 'tinggi']);
             $table->decimal('min_value', 10, 2);
             $table->decimal('mid_value', 10, 2);
             $table->decimal('max_value', 10, 2);

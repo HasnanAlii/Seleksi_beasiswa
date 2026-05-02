@@ -8,7 +8,6 @@ class Requirement extends Model
 {
     protected $fillable = [
         'requirement_name',
-        'rules',
     ];
 
     public function scholarshipRequirements()

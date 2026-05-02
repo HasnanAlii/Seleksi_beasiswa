@@ -3,63 +3,70 @@
 namespace App\Http\Controllers;
 
 use App\Models\ApplicationDocument;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ApplicationDocumentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $data = ApplicationDocument::query()->with('application')->latest()->get();
+        if (request()->ajax()) {
+            return response()->json(['data' => $data]);
+        }
+
+        return view('application-documents.index', ['data' => $data]);
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $validated = $request->validate($this->rules());
+
+        $doc = ApplicationDocument::create($validated);
+
+        return response()->json([
+            'message' => 'Data berhasil disimpan',
+            'data' => $doc->load('application'),
+        ], 201);
+    }
+
+    public function show(ApplicationDocument $applicationDocument): JsonResponse
+    {
+        return response()->json([
+            'data' => $applicationDocument->load('application'),
+        ]);
+    }
+
+    public function update(Request $request, ApplicationDocument $applicationDocument): JsonResponse
+    {
+        $validated = $request->validate($this->rules());
+
+        $applicationDocument->update($validated);
+
+        return response()->json([
+            'message' => 'Data berhasil diupdate',
+            'data' => $applicationDocument->load('application'),
+        ]);
+    }
+
+    public function destroy(ApplicationDocument $applicationDocument): JsonResponse
+    {
+        $applicationDocument->delete();
+
+        return response()->json([
+            'message' => 'Data berhasil dihapus',
+        ]);
     }
 
     /**
-     * Show the form for creating a new resource.
+     * @return array<string, string>
      */
-    public function create()
+    private function rules(): array
     {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(ApplicationDocument $applicationDocument)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(ApplicationDocument $applicationDocument)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, ApplicationDocument $applicationDocument)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(ApplicationDocument $applicationDocument)
-    {
-        //
+        return [
+            'application_id' => 'required|integer|exists:applications,id',
+            'document_type' => 'required|string|max:255',
+            'file_path' => 'required|string|max:255',
+        ];
     }
 }

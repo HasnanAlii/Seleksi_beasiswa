@@ -1,0 +1,123 @@
+<x-app-layout>
+    <x-slot name="header">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <h2 class="font-extrabold text-2xl text-gray-800 leading-tight tracking-tight">
+                Detail Penilaian Wawancara
+            </h2>
+            <nav class="flex text-sm font-medium text-gray-500">
+                <a href="{{ route('dashboard') }}" class="hover:text-blue-600 cursor-pointer transition">Dashboard</a>
+                <span class="mx-2">/</span>
+                <a href="{{ route('interview-assessments.index') }}" class="hover:text-blue-600 cursor-pointer transition">Penilaian</a>
+                <span class="mx-2">/</span>
+                <span class="text-blue-600">Detail</span>
+            </nav>
+        </div>
+    </x-slot>
+
+    <div class="py-12 bg-[#f0f6ff] min-h-screen px-10">
+        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white shadow-xl shadow-slate-200/60 rounded-3xl border border-slate-100 overflow-hidden">
+
+                {{-- Header Banner --}}
+                @php $score = (float) $assessment->score; @endphp
+                <div class="px-8 py-10 text-white relative overflow-hidden
+                    {{ $score >= 80 ? 'bg-gradient-to-r from-emerald-500 to-teal-600' : ($score >= 60 ? 'bg-gradient-to-r from-amber-500 to-orange-500' : 'bg-gradient-to-r from-rose-500 to-red-600') }}">
+                    <div class="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-white opacity-10 rounded-full blur-3xl"></div>
+                    <div class="absolute bottom-0 left-0 -mb-10 -ml-10 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
+                    <div class="relative z-10 flex items-center justify-between">
+                        <div>
+                            <span class="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full border border-white/30 backdrop-blur-sm mb-4 inline-block">
+                                Penilaian #{{ $assessment->id }}
+                            </span>
+                            <h3 class="text-3xl font-extrabold">{{ $assessment->interview->application->student->name }}</h3>
+                            <p class="text-white/80 mt-1 font-medium">{{ $assessment->interview->application->scholarship->scholarship_name }}</p>
+                            <p class="text-white/60 text-sm mt-1">Dinilai oleh: <span class="font-semibold text-white/90">{{ $assessment->interviewer }}</span></p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-6xl font-extrabold">{{ number_format($score, 2) }}</div>
+                            <div class="text-white/70 text-sm mt-1">
+                                {{ $score >= 80 ? 'Sangat Baik' : ($score >= 60 ? 'Cukup Baik' : 'Perlu Peningkatan') }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Content --}}
+                <div class="p-8 md:p-10 space-y-8">
+
+                    {{-- Info Wawancara --}}
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 border-b border-slate-100 pb-2">Informasi Wawancara</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <div class="text-xs font-semibold text-slate-400 mb-1">Mahasiswa</div>
+                                <div class="text-base font-bold text-slate-800">{{ $assessment->interview->application->student->name }}</div>
+                                <div class="text-xs text-slate-500 mt-0.5">
+                                    {{ $assessment->interview->application->student->student_number }}
+                                    · {{ $assessment->interview->application->student->study_program }}
+                                </div>
+                            </div>
+                            <div>
+                                <div class="text-xs font-semibold text-slate-400 mb-1">Program Beasiswa</div>
+                                <div class="text-base font-bold text-slate-800">{{ $assessment->interview->application->scholarship->scholarship_name }}</div>
+                            </div>
+                            <div>
+                                <div class="text-xs font-semibold text-slate-400 mb-1">Tanggal Wawancara</div>
+                                <div class="text-base font-bold text-slate-800">{{ $assessment->interview->schedule->translatedFormat('l, d F Y') }}</div>
+                            </div>
+                            <div>
+                                <div class="text-xs font-semibold text-slate-400 mb-1">Waktu</div>
+                                <div class="text-base font-bold text-slate-800">{{ $assessment->interview->schedule->format('H:i') }} WIB</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Info Penilaian --}}
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 border-b border-slate-100 pb-2">Hasil Penilaian</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <div class="text-xs font-semibold text-slate-400 mb-1">Nama Penilai</div>
+                                <div class="text-base font-bold text-slate-800">{{ $assessment->interviewer }}</div>
+                            </div>
+                            <div>
+                                <div class="text-xs font-semibold text-slate-400 mb-1">Nilai Akhir</div>
+                                <div class="text-2xl font-extrabold
+                                    {{ $score >= 80 ? 'text-emerald-600' : ($score >= 60 ? 'text-amber-600' : 'text-rose-600') }}">
+                                    {{ number_format($score, 2) }}
+                                </div>
+                            </div>
+                            <div>
+                                <div class="text-xs font-semibold text-slate-400 mb-1">Tanggal Penilaian</div>
+                                <div class="text-base font-bold text-slate-800">{{ $assessment->created_at->translatedFormat('d F Y H:i') }}</div>
+                            </div>
+                            <div class="md:col-span-2">
+                                <div class="text-xs font-semibold text-slate-400 mb-1">Catatan Penilai</div>
+                                <div class="text-base font-medium text-slate-700 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                    {{ $assessment->notes ?: 'Tidak ada catatan.' }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                {{-- Footer --}}
+                <div class="bg-slate-50 px-8 py-6 border-t border-slate-100 flex justify-between items-center">
+                    <a href="{{ route('interview-assessments.index') }}"
+                        class="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-700 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                        </svg>
+                        Kembali
+                    </a>
+                    <a href="{{ route('interview-assessments.edit', $assessment->id) }}"
+                        class="inline-flex justify-center items-center rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-amber-500/30 hover:bg-amber-600 transition-all transform hover:-translate-y-0.5">
+                        Ubah Penilaian
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</x-app-layout>

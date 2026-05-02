@@ -3,63 +3,70 @@
 namespace App\Http\Controllers;
 
 use App\Models\ScholarshipRequirement;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ScholarshipRequirementController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $data = ScholarshipRequirement::query()->with(['scholarship', 'requirement'])->latest()->get();
+        if (request()->ajax()) {
+            return response()->json(['data' => $data]);
+        }
+
+        return view('scholarship-requirements.index', ['data' => $data]);
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $validated = $request->validate($this->rules());
+
+        $sr = ScholarshipRequirement::create($validated);
+
+        return response()->json([
+            'message' => 'Data berhasil disimpan',
+            'data' => $sr->load(['scholarship', 'requirement']),
+        ], 201);
+    }
+
+    public function show(ScholarshipRequirement $scholarshipRequirement): JsonResponse
+    {
+        return response()->json([
+            'data' => $scholarshipRequirement->load(['scholarship', 'requirement']),
+        ]);
+    }
+
+    public function update(Request $request, ScholarshipRequirement $scholarshipRequirement): JsonResponse
+    {
+        $validated = $request->validate($this->rules());
+
+        $scholarshipRequirement->update($validated);
+
+        return response()->json([
+            'message' => 'Data berhasil diupdate',
+            'data' => $scholarshipRequirement->load(['scholarship', 'requirement']),
+        ]);
+    }
+
+    public function destroy(ScholarshipRequirement $scholarshipRequirement): JsonResponse
+    {
+        $scholarshipRequirement->delete();
+
+        return response()->json([
+            'message' => 'Data berhasil dihapus',
+        ]);
     }
 
     /**
-     * Show the form for creating a new resource.
+     * @return array<string, string>
      */
-    public function create()
+    private function rules(): array
     {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(ScholarshipRequirement $scholarshipRequirement)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(ScholarshipRequirement $scholarshipRequirement)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, ScholarshipRequirement $scholarshipRequirement)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(ScholarshipRequirement $scholarshipRequirement)
-    {
-        //
+        return [
+            'scholarship_id' => 'required|integer|exists:scholarships,id',
+            'requirement_id' => 'required|integer|exists:requirements,id',
+            'terms' => 'nullable|string',
+        ];
     }
 }

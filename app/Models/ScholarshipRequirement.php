@@ -9,7 +9,7 @@ class ScholarshipRequirement extends Model
     protected $fillable = [
         'scholarship_id',
         'requirement_id',
-        'status',
+        'terms',
     ];
 
     public function scholarship()

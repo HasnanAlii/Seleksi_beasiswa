@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('application_id')->constrained()->cascadeOnDelete();
             $table->string('stage');
-            $table->enum('status', ['verifikasi','wawancara','diterima','tidak diterima']);
+            $table->enum('status', ['verifikasi', 'wawancara', 'diterima', 'tidak diterima']);
             $table->text('notes')->nullable();
             $table->dateTime('date');
             $table->timestamps();

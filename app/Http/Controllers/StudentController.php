@@ -3,63 +3,70 @@
 namespace App\Http\Controllers;
 
 use App\Models\Student;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class StudentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $data = Student::query()->with(['applications', 'applications.scholarship'])->latest()->get();
+        if (request()->ajax()) {
+            return response()->json(['data' => $data]);
+        }
+
+        return view('students.index', ['data' => $data]);
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $validated = $request->validate($this->rules());
+
+        $student = Student::create($validated);
+
+        return response()->json([
+            'message' => 'Data berhasil disimpan',
+            'data' => $student->load(['applications', 'applications.scholarship']),
+        ], 201);
+    }
+
+    public function show(Student $student): JsonResponse
+    {
+        return response()->json([
+            'data' => $student->load(['applications', 'applications.scholarship']),
+        ]);
+    }
+
+    public function update(Request $request, Student $student): JsonResponse
+    {
+        $validated = $request->validate($this->rules());
+
+        $student->update($validated);
+
+        return response()->json([
+            'message' => 'Data berhasil diupdate',
+            'data' => $student->load(['applications', 'applications.scholarship']),
+        ]);
+    }
+
+    public function destroy(Student $student): JsonResponse
+    {
+        $student->delete();
+
+        return response()->json([
+            'message' => 'Data berhasil dihapus',
+        ]);
     }
 
     /**
-     * Show the form for creating a new resource.
+     * @return array<string, string>
      */
-    public function create()
+    private function rules(): array
     {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Student $student)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Student $student)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Student $student)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Student $student)
-    {
-        //
+        return [
+            'name' => 'required|string|max:100',
+            'student_number' => 'required|string|max:20',
+            'study_program' => 'required|string|max:100',
+        ];
     }
 }

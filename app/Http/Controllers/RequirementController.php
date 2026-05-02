@@ -7,59 +7,117 @@ use Illuminate\Http\Request;
 
 class RequirementController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $filters = [
+            'search' => $request->get('search', ''),
+        ];
+
+        $query = Requirement::query()
+            ->with(['scholarshipRequirements', 'scholarshipRequirements.scholarship'])
+            ->when($filters['search'], function ($q, $search) {
+                return $q->where('requirement_name', 'like', "%{$search}%");
+            })
+            ->latest();
+
+        $data = $query->paginate(15)->withQueryString();
+
+        if (request()->ajax()) {
+            return response()->json(['data' => $data]);
+        }
+
+        return view('requirements.index', compact('data', 'filters'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        return view('requirements.form', [
+            'requirement' => new Requirement,
+            'action' => route('requirements.store'),
+            'method' => 'POST',
+            'submitLabel' => 'Simpan Persyaratan',
+        ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate($this->rules());
+
+        $requirement = Requirement::create($validated);
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Persyaratan berhasil disimpan',
+                'data' => $requirement->load(['scholarshipRequirements', 'scholarshipRequirements.scholarship']),
+                'redirect' => route('requirements.index'),
+            ], 201);
+        }
+
+        return redirect()->route('requirements.index')->with('success', 'Persyaratan berhasil disimpan.');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Requirement $requirement)
     {
-        //
+        $requirement->load(['scholarshipRequirements', 'scholarshipRequirements.scholarship']);
+
+        if (request()->wantsJson()) {
+            return response()->json(['data' => $requirement]);
+        }
+
+        return view('requirements.show', compact('requirement'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Requirement $requirement)
     {
-        //
+        return view('requirements.form', [
+            'requirement' => $requirement,
+            'action' => route('requirements.update', $requirement),
+            'method' => 'PUT',
+            'submitLabel' => 'Simpan Perubahan',
+        ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Requirement $requirement)
     {
-        //
+        $validated = $request->validate($this->rules());
+
+        $requirement->update($validated);
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Persyaratan berhasil diupdate',
+                'data' => $requirement->load(['scholarshipRequirements', 'scholarshipRequirements.scholarship']),
+                'redirect' => route('requirements.index'),
+            ]);
+        }
+
+        return redirect()->route('requirements.index')->with('success', 'Persyaratan berhasil diupdate.');
+    }
+
+    public function destroy(Requirement $requirement)
+    {
+        $requirement->delete();
+
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Persyaratan berhasil dihapus',
+                'redirect' => route('requirements.index'),
+            ]);
+        }
+
+        return redirect()->route('requirements.index')->with('success', 'Persyaratan berhasil dihapus.');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * @return array<string, string>
      */
-    public function destroy(Requirement $requirement)
+    private function rules(): array
     {
-        //
+        return [
+            'requirement_name' => 'required|string|max:100',
+        ];
     }
 }

@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('requirements', function (Blueprint $table) {
             $table->id();
             $table->string('requirement_name', 100);
-            $table->text('rules')->nullable();
             $table->timestamps();
         });
     }

@@ -4,62 +4,143 @@ namespace App\Http\Controllers;
 
 use App\Models\News;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class NewsController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $filters = [
+            'search' => $request->get('search', ''),
+        ];
+
+        $query = News::with('media')
+            ->when($filters['search'], function ($q, $search) {
+                return $q->where('title', 'like', "%{$search}%");
+            })
+            ->latest();
+
+        $data = $query->paginate(15)->withQueryString();
+
+        if (request()->ajax()) {
+            return response()->json(['data' => $data]);
+        }
+
+        return view('news.index', compact('data', 'filters'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'title' => 'required|string|max:150',
+            'content' => 'required|string',
+            'additional_photos' => 'nullable|array',
+            'additional_photos.*' => 'image|max:4096',
+        ]);
+
+        $news = News::create([
+            'title' => $validated['title'],
+            'content' => $validated['content'],
+        ]);
+
+        if ($request->hasFile('additional_photos')) {
+            foreach ($request->file('additional_photos') as $photoFile) {
+                $path = $photoFile->store('news', 'public');
+                $news->media()->create(['file' => $path]);
+            }
+        }
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Berita berhasil ditambahkan.',
+                'data' => $news->load('media'),
+                'redirect' => route('news.index'),
+            ], 201);
+        }
+
+        return redirect()->route('news.index')->with('success', 'Berita berhasil ditambahkan.');
     }
 
-    /**
-     * Display the specified resource.
-     */
+    public function create()
+    {
+        return view('news.form', [
+            'news' => new News,
+            'action' => route('news.store'),
+            'method' => 'POST',
+            'submitLabel' => 'Tambah Berita',
+        ]);
+    }
+
     public function show(News $news)
     {
-        //
+        $news->load('media');
+
+        if (request()->wantsJson()) {
+            return response()->json(['data' => $news]);
+        }
+
+        return view('news.show', compact('news'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(News $news)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, News $news)
     {
-        //
+        $validated = $request->validate([
+            'title' => 'required|string|max:150',
+            'content' => 'required|string',
+            'additional_photos' => 'nullable|array',
+            'additional_photos.*' => 'image|max:4096',
+        ]);
+
+        $news->update([
+            'title' => $validated['title'],
+            'content' => $validated['content'],
+        ]);
+
+        if ($request->hasFile('additional_photos')) {
+            foreach ($request->file('additional_photos') as $photoFile) {
+                $path = $photoFile->store('news', 'public');
+                $news->media()->create(['file' => $path]);
+            }
+        }
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Berita berhasil diperbarui.',
+                'data' => $news->load('media'),
+                'redirect' => route('news.index'),
+            ]);
+        }
+
+        return redirect()->route('news.index')->with('success', 'Berita berhasil diperbarui.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    public function edit(News $news)
+    {
+        return view('news.form', [
+            'news' => $news,
+            'action' => route('news.update', $news),
+            'method' => 'PUT',
+            'submitLabel' => 'Simpan Perubahan',
+        ]);
+    }
+
     public function destroy(News $news)
     {
-        //
+        foreach ($news->media as $media) {
+            Storage::disk('public')->delete($media->file);
+        }
+        $news->delete();
+
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Berita berhasil dihapus',
+                'redirect' => route('news.index'),
+            ]);
+        }
+
+        return redirect()->route('news.index')->with('success', 'Berita berhasil dihapus.');
     }
 }

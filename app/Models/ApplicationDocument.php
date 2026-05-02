@@ -7,6 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class ApplicationDocument extends Model
 {
     protected $fillable = [
-        // Tambahkan kolom jika sudah ada di tabel
+        'application_id',
+        'document_type',
+        'file_path',
     ];
+
+    public function application()
+    {
+        return $this->belongsTo(Application::class);
+    }
 }

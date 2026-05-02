@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Selection extends Model
 {
+    protected $table = 'selection';
+
     protected $fillable = [
         'application_id',
         'stage',
@@ -13,6 +15,18 @@ class Selection extends Model
         'notes',
         'date',
     ];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'date' => 'datetime',
+        ];
+    }
 
     public function application()
     {

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('student_id')->constrained('students')->cascadeOnDelete();
             $table->foreignId('scholarship_id')->constrained('scholarships')->cascadeOnDelete();
-            $table->enum('status', ['menunggu','diproses','diterima','ditolak']);
+            $table->enum('status', ['menunggu', 'diproses', 'diterima', 'ditolak']);
             $table->text('description')->nullable();
             $table->timestamps();
         });
