@@ -15,6 +15,8 @@ class ScholarshipController extends Controller
     {
         $filters = [
             'search' => $request->get('search', ''),
+            'type' => $request->get('type', ''),
+            'status' => $request->get('status', ''),
         ];
 
         $query = Scholarship::query()
@@ -22,15 +24,26 @@ class ScholarshipController extends Controller
                 return $q->where('scholarship_name', 'like', "%{$search}%")
                     ->orWhere('scholarship_type', 'like', "%{$search}%");
             })
+            ->when($filters['type'], function ($q, $type) {
+                return $q->where('scholarship_type', $type);
+            })
+            ->when($filters['status'], function ($q, $status) {
+                if ($status === 'aktif') {
+                    return $q->where('validity_period', '>=', now()->toDateString());
+                } elseif ($status === 'berakhir') {
+                    return $q->where('validity_period', '<', now()->toDateString());
+                }
+            })
             ->latest();
 
         $data = $query->paginate(15)->withQueryString();
+        $scholarshipTypes = ScholarshipType::query()->orderBy('name')->get();
 
         if (request()->ajax()) {
             return response()->json(['data' => $data]);
         }
 
-        return view('scholarships.index', compact('data', 'filters'));
+        return view('scholarships.index', compact('data', 'filters', 'scholarshipTypes'));
     }
 
     public function create()
@@ -54,7 +67,6 @@ class ScholarshipController extends Controller
             $scholarship = Scholarship::create([
                 'scholarship_name' => $validated['scholarship_name'],
                 'scholarship_type' => $validated['scholarship_type'],
-                'description' => $validated['description'] ?? null,
                 'quota' => $validated['quota'],
                 'validity_period' => $validated['validity_period'],
             ]);
@@ -128,7 +140,6 @@ class ScholarshipController extends Controller
             $scholarship->update([
                 'scholarship_name' => $validated['scholarship_name'],
                 'scholarship_type' => $validated['scholarship_type'],
-                'description' => $validated['description'] ?? null,
                 'quota' => $validated['quota'],
                 'validity_period' => $validated['validity_period'],
             ]);
@@ -187,7 +198,6 @@ class ScholarshipController extends Controller
         return [
             'scholarship_name' => 'required|string|max:100',
             'scholarship_type' => 'required|string|max:50|exists:scholarship_types,name',
-            'description' => 'nullable|string',
             'quota' => 'required|integer|min:1',
             'validity_period' => 'required|date',
             'requirement_ids' => 'nullable|array',

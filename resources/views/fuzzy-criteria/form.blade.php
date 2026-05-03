@@ -23,7 +23,10 @@
                         <p class="text-sm text-slate-500 mt-1">Masukkan nama kriteria yang digunakan dalam metode fuzzy.</p>
                     </div>
 
-                    <form action="{{ $action }}" method="POST" data-ajax-form>
+                    <form action="{{ $action }}" method="POST" data-ajax-form
+                        x-data="fuzzyCriteriaForm()"
+                        x-init="initialize()"
+                        @submit="clearDraft()">
                         @csrf
                         @if($method === 'PUT') @method('PUT') @endif
 
@@ -35,7 +38,7 @@
                                     Nama Kriteria <span class="text-rose-500">*</span>
                                 </label>
                                 <input type="text" id="criteria_name" name="criteria_name" required
-                                    value="{{ old('criteria_name', $fuzzyCriteria->criteria_name) }}"
+                                    x-model="formData.criteria_name"
                                     placeholder="Masukkan nama kriteria"
                                     class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('criteria_name') border-rose-500 @enderror">
                                 @error('criteria_name')
@@ -73,4 +76,50 @@
             </div>
         </div>
     </div>
+
+    <script>
+        function fuzzyCriteriaForm() {
+            const STORAGE_KEY = 'fuzzy_criteria_form_draft';
+            return {
+                formData: {
+                    criteria_name: ''
+                },
+
+                initialize() {
+                    this.formData.criteria_name = '{{ old('criteria_name', $fuzzyCriteria->criteria_name) }}';
+                    this.restoreFromLocal();
+                    this.$watch('formData', () => this.saveToLocal(), { deep: true });
+                },
+
+                saveToLocal() {
+                    const data = {
+                        formData: this.formData,
+                        timestamp: new Date().getTime()
+                    };
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                },
+
+                restoreFromLocal() {
+                    const saved = localStorage.getItem(STORAGE_KEY);
+                    if (saved) {
+                        try {
+                            const data = JSON.parse(saved);
+                            const isFresh = (new Date().getTime() - data.timestamp) < (24 * 60 * 60 * 1000);
+                            if (isFresh) {
+                                Object.keys(data.formData).forEach(key => {
+                                    if (data.formData[key]) {
+                                        this.formData[key] = data.formData[key];
+                                    }
+                                });
+                            }
+                        } catch (e) {}
+                    }
+                },
+
+                clearDraft() {
+                    localStorage.removeItem(STORAGE_KEY);
+                }
+            }
+        }
+    </script>
 </x-app-layout>

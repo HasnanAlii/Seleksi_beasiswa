@@ -33,33 +33,38 @@
 
                         {{-- Filter --}}
                         <div class="mb-8 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 relative z-[100]">
-                            <form method="GET" action="{{ route('fuzzy-memberships.index') }}" class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6 items-end">
-                                <div class="flex flex-col xl:col-span-2">
+                            <form id="filter-form" method="GET" action="{{ route('fuzzy-memberships.index') }}" 
+                                class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-4 items-end relative z-[100]">
+                                
+                                <div class="flex flex-col xl:col-span-4">
                                     <label for="filter_criteria" class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">Filter Kriteria</label>
                                     <x-searchable-dropdown 
                                         name="criteria_id" 
                                         id="filter_criteria" 
                                         placeholder="Semua Kriteria"
-                                        :options="$criteriaList->map(fn($c) => ['id' => $c->id, 'name' => $c->criteria_name])"
+                                        :options="$criteriaList->map(fn($c) => ['id' => $c->id, 'name' => $c->criteria_name])->prepend(['id' => '', 'name' => 'Semua Kriteria'])"
                                         :value="$filters['criteria_id'] ?? ''"
                                         :showFooter="false"
                                         compact
                                     />
                                 </div>
-                                <div class="flex flex-col xl:col-span-2">
+
+                                <div class="flex flex-col xl:col-span-4">
                                     <label for="filter_scholarship" class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">Filter Beasiswa</label>
                                     <x-searchable-dropdown 
                                         name="scholarship_id" 
                                         id="filter_scholarship" 
                                         placeholder="Semua Beasiswa"
-                                        :options="$scholarships->map(fn($s) => ['id' => $s->id, 'name' => $s->scholarship_name])"
+                                        :options="$scholarships->map(fn($s) => ['id' => $s->id, 'name' => $s->scholarship_name])->prepend(['id' => '', 'name' => 'Semua Beasiswa'])"
                                         :value="$filters['scholarship_id'] ?? ''"
                                         :showFooter="false"
                                         compact
                                     />
                                 </div>
-                                <div class="xl:col-span-1"></div>
-                                <div class="flex flex-col">
+
+                                <div class="hidden xl:block xl:col-span-2"></div>
+
+                                <div class="flex flex-col xl:col-span-2">
                                     <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-4 py-2 text-[13px] font-black text-white shadow-lg shadow-blue-500/30 transition hover:bg-blue-700 hover:shadow-blue-600/40 transform hover:-translate-y-0.5 min-h-[38px]">
                                         Terapkan
                                     </button>

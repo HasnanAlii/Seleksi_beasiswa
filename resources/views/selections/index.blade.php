@@ -33,39 +33,74 @@
 
                         {{-- Filter --}}
                         <div class="mb-8 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 relative z-[100]">
-                            <form method="GET" action="{{ route('selections.index') }}" class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6 items-end">
-                                <div class="flex flex-col xl:col-span-2">
-                                    <label for="filter_search" class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">Cari Mahasiswa</label>
-                                    <div class="relative" x-data="{ value: '{{ $filters['search'] ?? '' }}' }">
-                                        <input type="text" id="filter_search" name="search" x-model="value"
-                                            placeholder="Nama atau NIM..."
-                                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-[7px] pr-10 text-[13px] font-bold focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm min-h-[38px]"
-                                            :class="value ? 'text-slate-600' : 'text-slate-400'">
+                            <form id="filter-form" method="GET" action="{{ route('selections.index') }}" 
+                                class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-4 items-end relative z-[100]">
+                                
+                                <!-- Cari Mahasiswa -->
+                                <div class="flex flex-col xl:col-span-4">
+                                    <label for="filter_search" class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">Pencarian</label>
+                                    <div class="relative group">
+                                        <input type="text" id="filter_search" name="search" value="{{ $filters['search'] ?? '' }}"
+                                            placeholder="Cari nama atau NIM mahasiswa..."
+                                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-[7px] pr-10 text-[13px] font-bold focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm min-h-[38px] text-slate-600"
+                                            @input.debounce.500ms="$el.closest('form').submit()">
                                         <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
                                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                                         </div>
                                     </div>
                                 </div>
+
+                                <!-- Filter Beasiswa -->
                                 <div class="flex flex-col xl:col-span-2">
-                                    <label for="filter_status" class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">Filter Status</label>
+                                    <label for="filter_scholarship" class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">Beasiswa</label>
+                                    <x-searchable-dropdown 
+                                        name="scholarship_id" 
+                                        id="filter_scholarship" 
+                                        placeholder="Semua Beasiswa"
+                                        :options="$scholarships->map(fn($s) => ['id' => $s->id, 'name' => $s->scholarship_name])->prepend(['id' => '', 'name' => 'Semua Beasiswa'])"
+                                        :value="$filters['scholarship_id'] ?? ''"
+                                        :showFooter="false"
+                                        compact
+                                    />
+                                </div>
+
+                                <!-- Filter Tahap -->
+                                <div class="flex flex-col xl:col-span-2">
+                                    <label for="filter_stage" class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">Tahap</label>
+                                    <x-searchable-dropdown 
+                                        name="stage" 
+                                        id="filter_stage" 
+                                        placeholder="Semua Tahap"
+                                        :options="collect($stages)->map(fn($s) => ['id' => $s, 'name' => $s])->prepend(['id' => '', 'name' => 'Semua Tahap'])"
+                                        :value="$filters['stage'] ?? ''"
+                                        :showFooter="false"
+                                        compact
+                                    />
+                                </div>
+
+                                <!-- Filter Status -->
+                                <div class="flex flex-col xl:col-span-2">
+                                    <label for="filter_status" class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">Status</label>
                                     <x-searchable-dropdown 
                                         name="status" 
                                         id="filter_status" 
                                         placeholder="Semua Status"
-                                        :options="[
+                                        :options="collect([
+                                             ['id' => '', 'name' => 'Semua Status'],
                                              ['id' => 'verifikasi', 'name' => 'Verifikasi'],
                                              ['id' => 'wawancara', 'name' => 'Wawancara'],
                                              ['id' => 'siap di proses', 'name' => 'Siap di Proses'],
                                              ['id' => 'diterima', 'name' => 'Diterima'],
                                              ['id' => 'tidak diterima', 'name' => 'Tidak Diterima'],
-                                        ]"
+                                        ])"
                                         :value="$filters['status'] ?? ''"
                                         :showFooter="false"
                                         compact
                                     />
                                 </div>
-                                <div class="xl:col-span-1"></div>
-                                <div class="flex flex-col">
+
+                                <!-- Terapkan -->
+                                <div class="flex flex-col xl:col-span-2">
                                     <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-4 py-2 text-[13px] font-black text-white shadow-lg shadow-blue-500/30 transition hover:bg-blue-700 hover:shadow-blue-600/40 transform hover:-translate-y-0.5 min-h-[38px]">
                                         Terapkan
                                     </button>

@@ -21,14 +21,17 @@
                         <p class="mt-1 text-sm text-slate-500">Masukkan data informasi berita dan upload media pendukung dengan lengkap.</p>
                     </div>
 
-                    <form action="{{ $action }}" method="POST" enctype="multipart/form-data" data-ajax-form>
+                    <form action="{{ $action }}" method="POST" enctype="multipart/form-data" data-ajax-form
+                        x-data="newsForm()"
+                        x-init="initialize()"
+                        @submit="clearDraft()">
                         @csrf
                         @if ($method !== 'POST')
                             @method($method)
                         @endif
 
                         <div class="mb-10 space-y-10 border-b border-slate-100 pb-10">
-                            <!-- Additional Gallery -->
+                            <!-- Additional Gallery (Sudah ada Alpine.js di sini, kita biarkan saja asalkan tidak tabrakan) -->
                             <div x-data="{
                                 files: [],
                                 previews: [],
@@ -153,7 +156,7 @@
                             <div>
                                 <label for="title" class="mb-2 block text-sm font-semibold text-slate-700">Judul Berita <span class="text-rose-500">*</span></label>
                                 <input type="text" name="title" id="title"
-                                    value="{{ old('title', $news->title) }}" required
+                                    x-model="formData.title" required
                                     class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-600 transition-all focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10"
                                     placeholder="Masukkan Judul Berita">
                                 @error('title')
@@ -164,8 +167,9 @@
                             <div>
                                 <label for="content" class="mb-2 block text-sm font-semibold text-slate-700">Isi Berita <span class="text-rose-500">*</span></label>
                                 <textarea name="content" id="content" rows="6" required
+                                    x-model="formData.content"
                                     class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-600 transition-all focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10"
-                                    placeholder="Masukkan Isi Berita">{{ old('content', $news->content) }}</textarea>
+                                    placeholder="Masukkan Isi Berita"></textarea>
                                 @error('content')
                                     <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
                                 @enderror
@@ -186,8 +190,54 @@
         </div>
     </div>
 
-    <!-- Sync accumulated gallery files to file input before form submit -->
     <script>
+        function newsForm() {
+            const STORAGE_KEY = 'news_form_draft';
+            return {
+                formData: {
+                    title: '',
+                    content: ''
+                },
+
+                initialize() {
+                    this.formData.title = '{{ old('title', $news->title) }}';
+                    this.formData.content = '{{ str_replace(["\r", "\n"], ['\r', '\n'], old('content', $news->content)) }}';
+
+                    this.restoreFromLocal();
+                    this.$watch('formData', () => this.saveToLocal(), { deep: true });
+                },
+
+                saveToLocal() {
+                    const data = {
+                        formData: this.formData,
+                        timestamp: new Date().getTime()
+                    };
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                },
+
+                restoreFromLocal() {
+                    const saved = localStorage.getItem(STORAGE_KEY);
+                    if (saved) {
+                        try {
+                            const data = JSON.parse(saved);
+                            const isFresh = (new Date().getTime() - data.timestamp) < (24 * 60 * 60 * 1000);
+                            if (isFresh) {
+                                Object.keys(data.formData).forEach(key => {
+                                    if (data.formData[key]) {
+                                        this.formData[key] = data.formData[key];
+                                    }
+                                });
+                            }
+                        } catch (e) {}
+                    }
+                },
+
+                clearDraft() {
+                    localStorage.removeItem(STORAGE_KEY);
+                }
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const form = document.querySelector('form[enctype="multipart/form-data"]');
             if (form) {

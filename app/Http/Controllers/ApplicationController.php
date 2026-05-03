@@ -19,6 +19,7 @@ class ApplicationController extends Controller
         $filters = [
             'search' => $request->get('search', ''),
             'scholarship_id' => $request->get('scholarship_id', ''),
+            'status' => $request->get('status', ''),
         ];
 
         $query = Application::query()
@@ -31,6 +32,9 @@ class ApplicationController extends Controller
             })
             ->when($filters['scholarship_id'], function ($q, $scholarshipId) {
                 return $q->where('scholarship_id', $scholarshipId);
+            })
+            ->when($filters['status'], function ($q, $status) {
+                return $q->where('status', $status);
             })
             ->latest();
 
@@ -144,7 +148,7 @@ class ApplicationController extends Controller
             'scholarship.requirements.requirement',
             'requirementValues.requirement',
             'interviews.assessments',
-            'selection'
+            'selection',
         ]);
 
         if (request()->wantsJson()) {

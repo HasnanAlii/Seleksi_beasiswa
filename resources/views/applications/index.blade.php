@@ -20,16 +20,22 @@
                     <div class="p-6 lg:p-10">
 
                         {{-- Header Card --}}
-                        <div class="relative z-[250] flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-6">
+                        <div
+                            class="relative z-[250] flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-6">
                             <div>
                                 <h3 class="text-xl font-bold text-slate-800">Daftar Pendaftar Beasiswa</h3>
-                                <p class="text-sm text-slate-500 mt-1">Kelola data mahasiswa yang mendaftar beasiswa.</p>
+                                <p class="text-sm text-slate-500 mt-1">Kelola data mahasiswa yang mendaftar beasiswa.
+                                </p>
                             </div>
                             <div class="flex gap-3">
                                 <a href="{{ route('applications.create') }}"
                                     class="group inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white text-sm font-semibold rounded-2xl shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:shadow-blue-600/40 transition-all duration-300 transform hover:-translate-y-0.5">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform group-hover:rotate-90" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                        class="h-5 w-5 transition-transform group-hover:rotate-90" viewBox="0 0 20 20"
+                                        fill="currentColor">
+                                        <path fill-rule="evenodd"
+                                            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                                            clip-rule="evenodd" />
                                     </svg>
                                     Tambah Pendaftar
                                 </a>
@@ -38,37 +44,63 @@
 
                         <!-- Filter Bar -->
                         <div class="mb-8 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 relative z-[100]">
-                            <form id="filter-form" method="GET" action="{{ route('applications.index') }}" class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6 items-end relative z-[100]">
+                            <form id="filter-form" method="GET" action="{{ route('applications.index') }}"
+                                class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-4 items-end relative z-[100]">
+                                
                                 <!-- Cari Nama/NIM -->
-                                <div class="flex flex-col xl:col-span-2">
-                                    <label for="filter_search" class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">Cari Mahasiswa</label>
-                                    <div class="relative group" x-data="{ value: '{{ $filters['search'] ?? '' }}' }">
-                                        <input type="text" id="filter_search" name="search" x-model="value" placeholder="Nama atau NIM..." class="w-full rounded-xl border border-slate-200 bg-white px-4 py-[7px] pr-10 text-[13px] font-bold focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm min-h-[38px]" :class="value ? 'text-slate-600' : 'text-slate-400'">
-                                        <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                                <div class="flex flex-col xl:col-span-4">
+                                    <label for="filter_search"
+                                        class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">Pencarian</label>
+                                    <div class="relative group">
+                                        <input type="text" id="filter_search" name="search" value="{{ $filters['search'] ?? '' }}"
+                                            placeholder="Cari nama atau NIM mahasiswa..."
+                                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-[7px] pr-10 text-[13px] font-bold focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm min-h-[38px] text-slate-600"
+                                            @input.debounce.500ms="$el.closest('form').submit()">
+                                        <div
+                                            class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                            </svg>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Filter Beasiswa -->
                                 <div class="flex flex-col xl:col-span-2">
-                                    <label for="filter_scholarship" class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">Filter Beasiswa</label>
-                                    <x-searchable-dropdown 
-                                        name="scholarship_id" 
-                                        id="filter_scholarship" 
-                                        placeholder="Semua Beasiswa"
-                                        :options="$scholarships->map(fn($s) => ['id' => $s->id, 'name' => $s->scholarship_name])"
+                                    <label for="filter_scholarship"
+                                        class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">Beasiswa</label>
+                                    <x-searchable-dropdown name="scholarship_id" id="filter_scholarship"
+                                        placeholder="Semua Beasiswa" 
+                                        :options="$scholarships->map(fn($s) => ['id' => $s->id, 'name' => $s->scholarship_name])->prepend(['id' => '', 'name' => 'Semua'])" 
                                         :value="$filters['scholarship_id'] ?? ''"
-                                        :showFooter="false"
-                                        compact
-                                    />
+                                        :showFooter="false" compact />
                                 </div>
 
-                                <div class="xl:col-span-1"></div>
+                                <!-- Filter Status -->
+                                <div class="flex flex-col xl:col-span-2">
+                                    <label for="filter_status"
+                                        class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">Status</label>
+                                    <x-searchable-dropdown name="status" id="filter_status"
+                                        placeholder="Semua Status" 
+                                        :options="collect([
+                                            ['id' => '', 'name' => 'Semua'],
+                                            ['id' => 'menunggu', 'name' => 'Menunggu'],
+                                            ['id' => 'diproses', 'name' => 'Diproses'],
+                                            ['id' => 'diterima', 'name' => 'Diterima'],
+                                            ['id' => 'ditolak', 'name' => 'Ditolak'],
+                                        ])" 
+                                        :value="$filters['status'] ?? ''"
+                                        :showFooter="false" compact />
+                                </div>
+
+                                <div class="hidden xl:block xl:col-span-2"></div>
 
                                 <!-- Terapkan -->
-                                <div class="flex flex-col">
-                                    <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-4 py-2 text-[13px] font-black text-white shadow-lg shadow-blue-500/30 transition hover:bg-blue-700 hover:shadow-blue-600/40 transform hover:-translate-y-0.5 min-h-[38px]">
+                                <div class="flex flex-col xl:col-span-2">
+                                    <button type="submit"
+                                        class="inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-4 py-2 text-[13px] font-black text-white shadow-lg shadow-blue-500/30 transition hover:bg-blue-700 hover:shadow-blue-600/40 transform hover:-translate-y-0.5 min-h-[38px]">
                                         Terapkan
                                     </button>
                                 </div>
@@ -81,59 +113,96 @@
                                 <table class="min-w-full divide-y divide-slate-100">
                                     <thead class="bg-slate-50/80">
                                         <tr>
-                                            <th class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">No</th>
-                                            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Mahasiswa</th>
-                                            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Beasiswa</th>
-                                            <th class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
-                                            <th class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Aksi</th>
+                                            <th
+                                                class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                                No</th>
+                                            <th
+                                                class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                                Mahasiswa</th>
+                                            <th
+                                                class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                                Beasiswa</th>
+                                            <th
+                                                class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                                Status</th>
+                                            <th
+                                                class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                                Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-slate-100 bg-white">
                                         @forelse($data as $key => $item)
                                             <tr class="group hover:bg-blue-50/40 transition-colors duration-200">
-                                                <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium text-slate-400">
+                                                <td
+                                                    class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium text-slate-400">
                                                     {{ $data->firstItem() + $key }}
                                                 </td>
                                                 <td class="px-6 py-4 text-left">
-                                                    <div class="font-bold text-blue-600">{{ $item->student->name }}</div>
-                                                    <div class="text-xs text-slate-500">{{ $item->student->student_number }} - {{ $item->student->study_program }}</div>
+                                                    <div class="font-bold text-blue-600">{{ $item->student->name }}
+                                                    </div>
+                                                    <div class="text-xs text-slate-500">
+                                                        {{ $item->student->student_number }} -
+                                                        {{ $item->student->study_program }}</div>
                                                 </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-left text-sm font-bold text-slate-700">
+                                                <td
+                                                    class="px-6 py-4 whitespace-nowrap text-left text-sm font-bold text-slate-700">
                                                     {{ $item->scholarship->scholarship_name }}
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-center">
-                                                    @if($item->status == 'menunggu')
-                                                        <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-600 border border-amber-100/50">
-                                                            <div class="flex items-center justify-center w-5 h-5 rounded-full bg-amber-500 text-white">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-                                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                                                    @if ($item->status == 'menunggu')
+                                                        <span
+                                                            class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-600 border border-amber-100/50">
+                                                            <div
+                                                                class="flex items-center justify-center w-5 h-5 rounded-full bg-amber-500 text-white">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3"
+                                                                    viewBox="0 0 20 20" fill="currentColor">
+                                                                    <path fill-rule="evenodd"
+                                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                                                                        clip-rule="evenodd" />
                                                                 </svg>
                                                             </div>
                                                             Menunggu
                                                         </span>
                                                     @elseif($item->status == 'diproses')
-                                                        <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-600 border border-blue-100/50">
-                                                            <div class="flex items-center justify-center w-5 h-5 rounded-full bg-blue-500 text-white">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-                                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                                                        <span
+                                                            class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-600 border border-blue-100/50">
+                                                            <div
+                                                                class="flex items-center justify-center w-5 h-5 rounded-full bg-blue-500 text-white">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3"
+                                                                    viewBox="0 0 20 20" fill="currentColor">
+                                                                    <path fill-rule="evenodd"
+                                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                                                                        clip-rule="evenodd" />
                                                                 </svg>
                                                             </div>
                                                             Diproses
                                                         </span>
                                                     @elseif($item->status == 'diterima')
-                                                        <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-100/50">
-                                                            <div class="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500 text-white">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                                        <span
+                                                            class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-100/50">
+                                                            <div
+                                                                class="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500 text-white">
+                                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                                    class="h-3.5 w-3.5" viewBox="0 0 20 20"
+                                                                    fill="currentColor">
+                                                                    <path fill-rule="evenodd"
+                                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                                        clip-rule="evenodd" />
                                                                 </svg>
                                                             </div>
                                                             Diterima
                                                         </span>
                                                     @else
-                                                        <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-rose-50 text-rose-600 border border-rose-100/50">
-                                                            <div class="flex items-center justify-center w-5 h-5 rounded-full bg-rose-500 text-white">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                                        <span
+                                                            class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-rose-50 text-rose-600 border border-rose-100/50">
+                                                            <div
+                                                                class="flex items-center justify-center w-5 h-5 rounded-full bg-rose-500 text-white">
+                                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                                    class="h-3.5 w-3.5" viewBox="0 0 20 20"
+                                                                    fill="currentColor">
+                                                                    <path fill-rule="evenodd"
+                                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                                                        clip-rule="evenodd" />
                                                                 </svg>
                                                             </div>
                                                             Ditolak
@@ -144,7 +213,12 @@
                                                     <div class="relative flex justify-center" x-data="{ open: false }">
                                                         <button @click="open = !open" @click.outside="open = false"
                                                             class="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-all">
-                                                            <svg width="3" height="15" viewBox="0 0 3 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M0 1.5C4.47035e-08 0.671573 0.671573 0 1.5 0C2.32843 4.47035e-08 3 0.671573 3 1.5C3 2.32843 2.32843 3 1.5 3C0.671573 3 0 2.32843 0 1.5ZM0 7.5C4.47035e-08 6.67157 0.671573 6 1.5 6C2.32843 6 3 6.67157 3 7.5C3 8.32843 2.32843 9 1.5 9C0.671573 9 0 8.32843 0 7.5ZM0 13.5C4.47035e-08 12.6716 0.671573 12 1.5 12C2.32843 12 3 12.6716 3 13.5C3 14.3284 2.32843 15 1.5 15C0.671573 15 0 14.3284 0 13.5Z" fill="#555555"/></svg>
+                                                            <svg width="3" height="15" viewBox="0 0 3 15"
+                                                                fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                <path fill-rule="evenodd" clip-rule="evenodd"
+                                                                    d="M0 1.5C4.47035e-08 0.671573 0.671573 0 1.5 0C2.32843 4.47035e-08 3 0.671573 3 1.5C3 2.32843 2.32843 3 1.5 3C0.671573 3 0 2.32843 0 1.5ZM0 7.5C4.47035e-08 6.67157 0.671573 6 1.5 6C2.32843 6 3 6.67157 3 7.5C3 8.32843 2.32843 9 1.5 9C0.671573 9 0 8.32843 0 7.5ZM0 13.5C4.47035e-08 12.6716 0.671573 12 1.5 12C2.32843 12 3 12.6716 3 13.5C3 14.3284 2.32843 15 1.5 15C0.671573 15 0 14.3284 0 13.5Z"
+                                                                    fill="#555555" />
+                                                            </svg>
                                                         </button>
                                                         <div x-show="open"
                                                             x-transition:enter="transition ease-out duration-150"
@@ -163,10 +237,13 @@
                                                                 class="w-full block px-4 py-2.5 text-sm text-left font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
                                                                 Ubah
                                                             </a>
-                                                            <form action="{{ route('applications.destroy', $item->id) }}" method="POST">
+                                                            <form
+                                                                action="{{ route('applications.destroy', $item->id) }}"
+                                                                method="POST">
                                                                 @csrf
                                                                 @method('DELETE')
-                                                                <button type="submit" onclick="return confirm('Yakin ingin menghapus pendaftaran ini?')"
+                                                                <button type="submit"
+                                                                    onclick="return confirm('Yakin ingin menghapus pendaftaran ini?')"
                                                                     class="w-full text-left px-4 py-2.5 text-sm font-semibold text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition-colors">
                                                                     Hapus
                                                                 </button>
@@ -180,13 +257,21 @@
                                                 <td colspan="5" class="px-6 py-16 text-center">
                                                     <div class="flex flex-col items-center justify-center">
                                                         <div class="bg-slate-50 p-4 rounded-full mb-4">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                                class="h-10 w-10 text-slate-300" fill="none"
+                                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    stroke-width="2"
+                                                                    d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                                                             </svg>
                                                         </div>
-                                                        <h3 class="text-lg font-semibold text-slate-700">Tidak ada data pendaftaran</h3>
-                                                        <p class="text-sm text-slate-500 max-w-xs mx-auto mt-1">Belum ada mahasiswa yang mendaftar atau tidak ditemukan dengan filter tersebut.</p>
-                                                        <a href="{{ route('applications.create') }}" class="mt-4 inline-block text-sm text-blue-600 hover:text-blue-800 font-medium hover:underline">
+                                                        <h3 class="text-lg font-semibold text-slate-700">Tidak ada data
+                                                            pendaftaran</h3>
+                                                        <p class="text-sm text-slate-500 max-w-xs mx-auto mt-1">Belum
+                                                            ada mahasiswa yang mendaftar atau tidak ditemukan dengan
+                                                            filter tersebut.</p>
+                                                        <a href="{{ route('applications.create') }}"
+                                                            class="mt-4 inline-block text-sm text-blue-600 hover:text-blue-800 font-medium hover:underline">
                                                             + Tambah Pendaftar
                                                         </a>
                                                     </div>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Application;
+use App\Models\Scholarship;
 use App\Models\Selection;
 use Illuminate\Http\Request;
 
@@ -13,6 +14,8 @@ class SelectionController extends Controller
         $filters = [
             'search' => $request->get('search', ''),
             'status' => $request->get('status', ''),
+            'scholarship_id' => $request->get('scholarship_id', ''),
+            'stage' => $request->get('stage', ''),
         ];
 
         $query = Selection::query()
@@ -26,15 +29,25 @@ class SelectionController extends Controller
             ->when($filters['status'], function ($q, $status) {
                 return $q->where('status', $status);
             })
+            ->when($filters['scholarship_id'], function ($q, $scholarshipId) {
+                return $q->whereHas('application', function ($qApp) use ($scholarshipId) {
+                    $qApp->where('scholarship_id', $scholarshipId);
+                });
+            })
+            ->when($filters['stage'], function ($q, $stage) {
+                return $q->where('stage', $stage);
+            })
             ->latest();
 
         $data = $query->paginate(15)->withQueryString();
+        $scholarships = Scholarship::orderBy('scholarship_name')->get();
+        $stages = Selection::distinct()->pluck('stage')->filter();
 
         if (request()->ajax()) {
             return response()->json(['data' => $data]);
         }
 
-        return view('selections.index', compact('data', 'filters'));
+        return view('selections.index', compact('data', 'filters', 'scholarships', 'stages'));
     }
 
     public function create()

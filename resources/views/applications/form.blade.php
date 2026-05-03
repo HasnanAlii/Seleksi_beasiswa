@@ -14,13 +14,25 @@
         </div>
     </x-slot>
 
-    <div class="py-12 bg-[#f0f6ff] min-h-screen px-10">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white shadow-xl shadow-slate-200/60 rounded-3xl border border-slate-100 overflow-hidden">
-                <div class="p-8 md:p-12">
-                    <div class="mb-8 border-b border-slate-100 pb-6">
-                        <h3 class="text-2xl font-bold text-slate-800">Formulir Pendaftaran Beasiswa</h3>
-                        <p class="text-sm text-slate-500 mt-1">Lengkapi data pendaftaran mahasiswa di bawah ini.</p>
+    <div class="py-12 bg-[#f8fafc] min-h-screen px-6 lg:px-10 relative overflow-hidden">
+        {{-- Decorative background elements --}}
+        <div class="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-blue-50/50 to-transparent -z-10"></div>
+        <div class="absolute -top-24 -right-24 w-96 h-96 bg-blue-100/30 rounded-full blur-3xl -z-10"></div>
+        <div class="absolute top-1/2 -left-24 w-72 h-72 bg-indigo-100/20 rounded-full blur-3xl -z-10"></div>
+
+        <div class="max-w-4xl mx-auto relative">
+            <div class="bg-white shadow-2xl shadow-slate-200/60 rounded-[2.5rem] border border-slate-100 overflow-hidden">
+                <div class="p-10 md:p-14">
+                    <div class="mb-10 border-b border-slate-100 pb-8">
+                        <div class="flex items-center gap-4 mb-3">
+                            <div class="p-3 bg-blue-50 rounded-2xl">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                            </div>
+                            <div>
+                                <h3 class="text-3xl font-black text-slate-800 tracking-tight">Pendaftaran Beasiswa</h3>
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Formulir Pengajuan Data</p>
+                            </div>
+                        </div>
                     </div>
 
                     <form action="{{ $action }}" method="POST" data-ajax-form
@@ -41,7 +53,7 @@
                             @if(!$application->exists)
                             {{-- === INPUT MAHASISWA BARU (selalu tampil saat create) === --}}
                             <input type="hidden" name="is_new_student" value="1">
-                            <div class="space-y-5 rounded-2xl border border-blue-100 bg-blue-50/40 p-6">
+                            <div class="space-y-5 rounded-2xl border border-blue-100 bg-blue-50 p-6 shadow-sm shadow-blue-100/50">
                                 <div class="flex items-center gap-2 mb-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
                                         <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6z" />
@@ -157,7 +169,7 @@
 
                                 <div class="space-y-4" x-show="selectedRequirements.length > 0">
                                     <template x-for="(requirement, index) in selectedRequirements" :key="requirement.requirement_id">
-                                        <div class="rounded-2xl bg-white border border-slate-200 p-5 shadow-sm">
+                                        <div class="rounded-xl bg-white border border-slate-200 p-5 shadow-sm hover:border-blue-300 hover:shadow-md transition-all duration-200">
                                             <input type="hidden" :name="`requirement_values[${index}][requirement_id]`" :value="requirement.requirement_id">
                                             <input type="hidden" :name="`requirement_values[${index}][term]`" :value="requirement.term || ''">
 
@@ -236,13 +248,13 @@
                         </div>
 
                         {{-- Action Buttons --}}
-                        <div class="mt-10 flex items-center justify-end gap-4 border-t border-slate-100 pt-6">
+                        <div class="mt-12 flex items-center justify-end gap-4 border-t border-slate-100 pt-10">
                             <a href="{{ route('applications.index') }}"
-                                class="inline-flex justify-center rounded-xl bg-white px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 hover:text-slate-900 transition-all">
+                                class="inline-flex justify-center rounded-2xl bg-white px-8 py-4 text-sm font-black text-slate-600 shadow-sm ring-1 ring-inset ring-slate-200 hover:bg-slate-50 transition-all uppercase tracking-widest">
                                 Batal
                             </a>
                             <button type="submit"
-                                class="inline-flex justify-center rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:shadow-blue-600/40 transition-all transform hover:-translate-y-0.5">
+                                class="inline-flex justify-center rounded-2xl bg-blue-600 px-8 py-4 text-sm font-black text-white shadow-xl shadow-blue-600/20 hover:bg-blue-700 transition-all transform hover:-translate-y-0.5 uppercase tracking-widest">
                                 {{ $submitLabel }}
                             </button>
                         </div>

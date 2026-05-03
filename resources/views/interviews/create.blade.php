@@ -139,7 +139,7 @@
                             </div>
 
                             {{-- Slot Preview (Alpine.js) --}}
-                            <div x-data="slotPreview()" x-init="init()" class="bg-slate-50 rounded-2xl p-5 border border-slate-200">
+                            {{-- <div x-data="slotPreview()" x-init="init()" class="bg-slate-50 rounded-2xl p-5 border border-slate-200">
                                 <p class="text-sm font-semibold text-slate-700 mb-3">Estimasi Slot Wawancara</p>
                                 <div x-show="totalSlots > 0" class="flex flex-wrap gap-3">
                                     <div class="flex items-center gap-2 bg-white rounded-xl px-4 py-2.5 shadow-sm border border-slate-100">
@@ -162,7 +162,7 @@
                                     </div>
                                 </div>
                                 <p x-show="totalSlots === 0" class="text-sm text-slate-400 italic">Isi rentang tanggal, waktu, dan durasi untuk melihat estimasi.</p>
-                            </div>
+                            </div> --}}
 
                         </div>
 

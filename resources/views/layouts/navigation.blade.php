@@ -52,6 +52,7 @@
                 <p class="px-2 mb-2 text-xs font-extrabold text-[#74b3ea] uppercase tracking-widest">Manajemen Beasiswa</p>
                 <div class="space-y-1">
 
+                    @hasrole('admin|staf')
                     {{-- Beasiswa dropdown --}}
                     @php $isBeasiswaMenu = request()->routeIs('scholarships.*') || request()->routeIs('requirements.*'); @endphp
                     <div x-data="{ open: {{ $isBeasiswaMenu ? 'true' : 'false' }} }">
@@ -61,7 +62,10 @@
                                 <div class="absolute left-0 top-1/2 w-[4px] h-6 -translate-y-1/2 bg-[#2ee0a7] shadow-[0_0_8px_rgba(46,224,167,0.8)] rounded-r-md"></div>
                             @endif
                             <div class="flex items-center gap-3.5">
-                                <i data-feather="award" class="w-5 h-5 {{ $isBeasiswaMenu ? 'text-white fill-[#ffffff33]' : 'text-[#87abc9] group-hover:text-white' }}"></i>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 {{ $isBeasiswaMenu ? 'text-white' : 'text-[#87abc9] group-hover:text-white' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                                </svg>
                                 <span>Beasiswa</span>
                             </div>
                             <svg :class="{ 'rotate-180': open }" class="w-4 h-4 transition-transform duration-200 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -83,12 +87,13 @@
                             </li>
                         </ul>
                     </div>
+                    @endhasrole
                 </div>
             </div>
 
-            {{-- PENDAFTARAN --}}
+                @hasrole('admin|staf')
+                {{-- PENDAFTARAN --}}
                 <div class="space-y-1">
-
                     {{-- Pendaftaran --}}
                     <div>
                         <a href="{{ route('applications.index') }}" title="Data Pendaftaran"
@@ -101,23 +106,26 @@
                         </a>
                     </div>
                 </div>
+                @endhasrole
 
-            {{-- SELEKSI & WAWANCARA --}}
-      
+                {{-- SELEKSI & WAWANCARA --}}
+                @hasrole('admin|staf|kaprodi|wakil dekan 3')
                 <div class="space-y-1">
-
                     {{-- Seleksi --}}
+                    @hasrole('admin|staf|kaprodi|wakil dekan 3')
                     <div>
                         <a href="{{ route('selections.index') }}" title="Data Seleksi"
-                            class="relative flex items-center gap-3.5 px-4 py-3.5 text-sm font-extrabold rounded-xl transition-all duration-200 group {{ request()->routeIs('selections.*') ? 'bg-white/10 ring-1 ring-white/20 text-white shadow-lg backdrop-blur-sm' : 'text-white hover:bg-white/5' }}">
-                            @if (request()->routeIs('selections.*'))
+                                class="relative flex items-center gap-3.5 px-4 py-3.5 text-sm font-extrabold rounded-xl transition-all duration-200 group {{ request()->routeIs('selections.*') ? 'bg-white/10 ring-1 ring-white/20 text-white shadow-lg backdrop-blur-sm' : 'text-white hover:bg-white/5' }}">
+                                @if (request()->routeIs('selections.*'))
                                 <div class="absolute left-0 top-1/2 w-[4px] h-6 -translate-y-1/2 bg-[#2ee0a7] shadow-[0_0_8px_rgba(46,224,167,0.8)] rounded-r-md"></div>
                             @endif
                             <i data-feather="check-square" class="w-5 h-5 {{ request()->routeIs('selections.*') ? 'text-white fill-[#ffffff33]' : 'text-[#87abc9] group-hover:text-white' }}"></i>
                             <span>Seleksi</span>
                         </a>
                     </div>
+                    @endhasrole
 
+                    @hasrole('admin|staf|kaprodi')
                     {{-- Wawancara --}}
                     @php $isInterviews = request()->routeIs('interviews.*') || request()->routeIs('interview-assessments.*'); @endphp
                     <div x-data="{ open: {{ $isInterviews ? 'true' : 'false' }} }">
@@ -149,7 +157,9 @@
                             </li>
                         </ul>
                     </div>
+                    @endhasrole
                 </div>
+                    @endhasrole
 
                 {{-- INFORMASI --}}
                 {{-- <div class="mt-7">
@@ -182,6 +192,7 @@
                     </div>
                 {{-- </div> --}}
 
+                @hasrole('admin|staf')
                 {{-- METODE FUZZY --}}
                 <div class="mt-7">
                     <p class="px-2 mb-2 text-xs font-extrabold text-[#74b3ea] uppercase tracking-widest">Pengaturan Fuzzy</p>
@@ -219,6 +230,7 @@
                         </div>
                     </div>
                 </div>
+                @endhasrole
         </div>
     </div>
 

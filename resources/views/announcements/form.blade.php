@@ -21,7 +21,10 @@
                         <p class="mt-1 text-sm text-slate-500">Lengkapi form di bawah ini dengan data pengumuman yang sesuai.</p>
                     </div>
 
-                    <form action="{{ $action }}" method="POST" data-ajax-form>
+                    <form action="{{ $action }}" method="POST" data-ajax-form
+                        x-data="announcementForm()"
+                        x-init="initialize()"
+                        @submit="clearDraft()">
                         @csrf
                         @if ($method !== 'POST')
                             @method($method)
@@ -38,6 +41,7 @@
                                     :options="$scholarships->map(fn($s) => ['id' => $s->id, 'name' => $s->scholarship_name])"
                                     :value="old('scholarship_id', $announcement->scholarship_id)"
                                     :showFooter="false"
+                                    x-model="formData.scholarship_id"
                                 />
                                 @error('scholarship_id')
                                     <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
@@ -47,7 +51,7 @@
                             <div>
                                 <label for="title" class="mb-2 block text-sm font-semibold text-slate-700">Judul Pengumuman <span class="text-rose-500">*</span></label>
                                 <input type="text" name="title" id="title"
-                                    value="{{ old('title', $announcement->title) }}" required
+                                    x-model="formData.title" required
                                     class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-600 transition-all focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10"
                                     placeholder="Masukkan Judul Pengumuman">
                                 @error('title')
@@ -58,7 +62,7 @@
                             <div>
                                 <label for="date" class="mb-2 block text-sm font-semibold text-slate-700">Tanggal Pengumuman <span class="text-rose-500">*</span></label>
                                 <input type="date" name="date" id="date"
-                                    value="{{ old('date', $announcement->date ? $announcement->date->format('Y-m-d') : '') }}" required
+                                    x-model="formData.date" required
                                     class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-600 transition-all focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10">
                                 @error('date')
                                     <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
@@ -77,6 +81,7 @@
                                     ]"
                                     :value="old('publish_status', $announcement->publish_status)"
                                     :showFooter="false"
+                                    x-model="formData.publish_status"
                                     compact
                                 />
                                 @error('publish_status')
@@ -99,4 +104,57 @@
             </div>
         </div>
     </div>
+
+    <script>
+        function announcementForm() {
+            const STORAGE_KEY = 'announcement_form_draft';
+            return {
+                formData: {
+                    scholarship_id: '',
+                    title: '',
+                    date: '',
+                    publish_status: ''
+                },
+
+                initialize() {
+                    this.formData.scholarship_id = '{{ old('scholarship_id', $announcement->scholarship_id) }}';
+                    this.formData.title = '{{ old('title', $announcement->title) }}';
+                    this.formData.date = '{{ old('date', $announcement->date ? $announcement->date->format('Y-m-d') : '') }}';
+                    this.formData.publish_status = '{{ old('publish_status', $announcement->publish_status) }}';
+
+                    this.restoreFromLocal();
+                    this.$watch('formData', () => this.saveToLocal(), { deep: true });
+                },
+
+                saveToLocal() {
+                    const data = {
+                        formData: this.formData,
+                        timestamp: new Date().getTime()
+                    };
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                },
+
+                restoreFromLocal() {
+                    const saved = localStorage.getItem(STORAGE_KEY);
+                    if (saved) {
+                        try {
+                            const data = JSON.parse(saved);
+                            const isFresh = (new Date().getTime() - data.timestamp) < (24 * 60 * 60 * 1000);
+                            if (isFresh) {
+                                Object.keys(data.formData).forEach(key => {
+                                    if (data.formData[key]) {
+                                        this.formData[key] = data.formData[key];
+                                    }
+                                });
+                            }
+                        } catch (e) {}
+                    }
+                },
+
+                clearDraft() {
+                    localStorage.removeItem(STORAGE_KEY);
+                }
+            }
+        }
+    </script>
 </x-app-layout>

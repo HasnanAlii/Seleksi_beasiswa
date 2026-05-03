@@ -27,9 +27,10 @@
                             
                             <div class="relative z-10">
                                 <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-md border border-white/30 shadow-inner">
-                                    <svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0v6" />
+                                    <svg class="w-9 h-9 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 14l9-5-9-5-9 5 9 5z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 14l10 3" />
                                     </svg>
                                 </div>
                                 <h3 class="text-2xl font-black leading-tight mb-2">{{ $scholarship->scholarship_name }}</h3>
@@ -41,10 +42,10 @@
                         
                         <div class="p-6">
                             <div class="space-y-4">
-                                <div class="flex justify-between items-center border-b border-slate-50 pb-3">
+                                {{-- <div class="flex justify-between items-center border-b border-slate-50 pb-3">
                                     <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">ID Beasiswa</span>
                                     <span class="font-mono text-sm font-bold text-slate-800">#{{ str_pad($scholarship->id, 5, '0', STR_PAD_LEFT) }}</span>
-                                </div>
+                                </div> --}}
                                 <div class="flex justify-between items-center border-b border-slate-50 pb-3">
                                     <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kuota Disediakan</span>
                                     <span class="text-sm font-bold text-slate-800">{{ $scholarship->quota }} Orang</span>
@@ -65,13 +66,7 @@
                                 </div>
                             </div>
                             
-                            <div class="mt-8 pt-6 border-t border-slate-100">
-                                <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Deskripsi Beasiswa</h4>
-                                <div class="text-sm text-slate-600 leading-relaxed">
-                                    {!! nl2br(e($scholarship->description)) ?: '<span class="text-slate-400 italic text-xs">Tidak ada deskripsi tersedia.</span>' !!}
-                                </div>
-                            </div>
-                            
+
                             <div class="mt-8 pt-6 border-t border-slate-100">
                                 <a href="{{ route('scholarships.edit', $scholarship) }}" class="block w-full py-3 bg-slate-900 text-white text-center rounded-xl text-xs font-bold uppercase tracking-widest shadow-xl shadow-slate-200 hover:bg-blue-600 transition-all duration-300 transform hover:-translate-y-1">
                                     Edit Detail Beasiswa

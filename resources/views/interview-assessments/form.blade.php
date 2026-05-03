@@ -23,7 +23,10 @@
                         <p class="text-sm text-slate-500 mt-1">Isi data hasil penilaian wawancara seleksi beasiswa.</p>
                     </div>
 
-                    <form action="{{ $action }}" method="POST" data-ajax-form>
+                    <form action="{{ $action }}" method="POST" data-ajax-form
+                        x-data="assessmentForm()"
+                        x-init="initialize()"
+                        @submit="clearDraft()">
                         @csrf
                         @if($method === 'PUT')
                             @method('PUT')
@@ -41,6 +44,7 @@
                                     :options="$interviews->map(fn($interview) => ['id' => $interview->id, 'name' => $interview->application->student->name . ' — ' . $interview->application->scholarship->scholarship_name . ' (' . $interview->schedule->format('d/m/Y H:i') . ')'])"
                                     :value="old('interview_id', $assessment->interview_id)"
                                     :showFooter="false"
+                                    x-model="formData.interview_id"
                                 />
                                 @error('interview_id')
                                     <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
@@ -51,7 +55,7 @@
                             <div>
                                 <label for="interviewer" class="block text-sm font-semibold text-slate-700 mb-2">Nama Penilai <span class="text-rose-500">*</span></label>
                                 <input type="text" id="interviewer" name="interviewer" required
-                                    value="{{ old('interviewer', $assessment->interviewer) }}"
+                                    x-model="formData.interviewer"
                                     placeholder="Nama lengkap penilai..."
                                     class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('interviewer') border-rose-500 @enderror">
                                 @error('interviewer')
@@ -66,7 +70,7 @@
                                     <span class="text-xs font-normal text-slate-400 ml-1">(0 – 100)</span>
                                 </label>
                                 <input type="number" id="score" name="score" required step="0.01" min="0" max="999.99"
-                                    value="{{ old('score', $assessment->score) }}"
+                                    x-model="formData.score"
                                     placeholder="Masukkan nilai penilaian"
                                     class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('score') border-rose-500 @enderror">
                                 @error('score')
@@ -78,8 +82,9 @@
                             <div>
                                 <label for="notes" class="block text-sm font-semibold text-slate-700 mb-2">Catatan Penilaian</label>
                                 <textarea id="notes" name="notes" rows="4"
+                                    x-model="formData.notes"
                                     class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('notes') border-rose-500 @enderror"
-                                    placeholder="Catatan atau komentar penilai (opsional)...">{{ old('notes', $assessment->notes) }}</textarea>
+                                    placeholder="Catatan atau komentar penilai (opsional)..."></textarea>
                                 @error('notes')
                                     <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
                                 @enderror
@@ -104,4 +109,61 @@
             </div>
         </div>
     </div>
+
+    <script>
+        function assessmentForm() {
+            const STORAGE_KEY = 'assessment_form_draft';
+            return {
+                formData: {
+                    interview_id: '',
+                    interviewer: '',
+                    score: '',
+                    notes: ''
+                },
+
+                initialize() {
+                    // Load initial from PHP
+                    this.formData.interview_id = '{{ old('interview_id', $assessment->interview_id) }}';
+                    this.formData.interviewer = '{{ old('interviewer', $assessment->interviewer) }}';
+                    this.formData.score = '{{ old('score', $assessment->score) }}';
+                    this.formData.notes = '{{ str_replace(["\r", "\n"], ['\r', '\n'], old('notes', $assessment->notes)) }}';
+
+                    // Restore from LocalStorage
+                    this.restoreFromLocal();
+
+                    // Watch
+                    this.$watch('formData', () => this.saveToLocal(), { deep: true });
+                },
+
+                saveToLocal() {
+                    const data = {
+                        formData: this.formData,
+                        timestamp: new Date().getTime()
+                    };
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                },
+
+                restoreFromLocal() {
+                    const saved = localStorage.getItem(STORAGE_KEY);
+                    if (saved) {
+                        try {
+                            const data = JSON.parse(saved);
+                            const isFresh = (new Date().getTime() - data.timestamp) < (24 * 60 * 60 * 1000);
+                            if (isFresh) {
+                                Object.keys(data.formData).forEach(key => {
+                                    if (data.formData[key]) {
+                                        this.formData[key] = data.formData[key];
+                                    }
+                                });
+                            }
+                        } catch (e) {}
+                    }
+                },
+
+                clearDraft() {
+                    localStorage.removeItem(STORAGE_KEY);
+                }
+            }
+        }
+    </script>
 </x-app-layout>

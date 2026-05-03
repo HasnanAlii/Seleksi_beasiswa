@@ -14,6 +14,7 @@ class InterviewController extends Controller
     {
         $filters = [
             'search' => $request->get('search', ''),
+            'scholarship_id' => $request->get('scholarship_id', ''),
         ];
 
         $query = Interview::query()
@@ -24,15 +25,21 @@ class InterviewController extends Controller
                         ->orWhere('student_number', 'like', "%{$search}%");
                 });
             })
+            ->when($filters['scholarship_id'], function ($q, $scholarshipId) {
+                return $q->whereHas('application', function ($qApp) use ($scholarshipId) {
+                    $qApp->where('scholarship_id', $scholarshipId);
+                });
+            })
             ->latest();
 
         $data = $query->paginate(15)->withQueryString();
+        $scholarships = Scholarship::orderBy('scholarship_name')->get();
 
         if (request()->ajax()) {
             return response()->json(['data' => $data]);
         }
 
-        return view('interviews.index', compact('data', 'filters'));
+        return view('interviews.index', compact('data', 'filters', 'scholarships'));
     }
 
     public function create()
