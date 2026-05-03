@@ -52,14 +52,15 @@
 
                                 <div class="flex flex-col xl:col-span-2 relative">
                                     <label for="filter_scholarship" class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">Beasiswa</label>
-                                    <select name="scholarship_id" id="filter_scholarship" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-[7px] text-[13px] font-bold focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm min-h-[38px] text-slate-600">
-                                        <option value="">Semua Beasiswa</option>
-                                        @foreach($scholarships as $scholarship)
-                                            <option value="{{ $scholarship->id }}" {{ ($filters['scholarship_id'] ?? '') == $scholarship->id ? 'selected' : '' }}>
-                                                {{ $scholarship->scholarship_name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
+                                    <x-searchable-dropdown 
+                                        name="scholarship_id" 
+                                        id="filter_scholarship" 
+                                        placeholder="Semua Beasiswa"
+                                        :options="$scholarships->map(fn($s) => ['id' => $s->id, 'name' => $s->scholarship_name])"
+                                        :value="$filters['scholarship_id'] ?? ''"
+                                        :showFooter="false"
+                                        compact
+                                    />
                                 </div>
 
                                 <div class="xl:col-span-1"></div>
@@ -74,8 +75,8 @@
                         </div>
 
                         {{-- Table --}}
-                        <div class="rounded-2xl border border-slate-200 bg-white">
-                            <div class="overflow-x-auto">
+                        <div class="rounded-2xl border border-slate-200 bg-white overflow-visible">
+                            <div class="overflow-visible">
                                 <table class="min-w-full divide-y divide-slate-100">
                                     <thead class="bg-slate-50/80">
                                         <tr>
@@ -96,12 +97,27 @@
                                                 <td class="px-6 py-4 whitespace-nowrap text-left text-sm font-bold text-blue-600">{{ $item->scholarship->scholarship_name ?? '-' }}</td>
                                                 <td class="px-6 py-4 text-left text-sm text-slate-500 max-w-md truncate">{{ $item->title }}</td>
                                                 <td class="px-6 py-4 text-left text-sm text-slate-500">{{ $item->date ? $item->date->format('d/m/Y') : '-' }}</td>
-                                                <td class="px-6 py-4 text-left text-sm text-slate-500">
-                                                    <span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold {{ $item->publish_status ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600' }}">
-                                                        <div class="w-2 h-2 rounded-full {{ $item->publish_status ? 'bg-emerald-500' : 'bg-slate-400' }}"></div>
-                                                        {{ $item->publish_status ? 'Dipublikasi' : 'Draft' }}
-                                                    </span>
-                                                </td>
+                                                 <td class="px-6 py-4 text-left text-sm text-slate-500">
+                                                     @if($item->publish_status)
+                                                         <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-100/50">
+                                                             <div class="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500 text-white">
+                                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                                                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                                                 </svg>
+                                                             </div>
+                                                             Dipublikasi
+                                                         </span>
+                                                     @else
+                                                         <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-slate-50 text-slate-600 border border-slate-100/50">
+                                                             <div class="flex items-center justify-center w-5 h-5 rounded-full bg-slate-400 text-white">
+                                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                                                                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                                                 </svg>
+                                                             </div>
+                                                             Draft
+                                                         </span>
+                                                     @endif
+                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                                     <div class="relative flex justify-center" x-data="{ open: false }">
                                                         <button @click="open = !open" @click.outside="open = false"

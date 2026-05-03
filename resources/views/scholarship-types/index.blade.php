@@ -75,8 +75,8 @@
                         </div>
 
                         {{-- Table --}}
-                        <div class="rounded-2xl border border-slate-200 bg-white">
-                            <div class="overflow-x-auto">
+                        <div class="rounded-2xl border border-slate-200 bg-white overflow-visible">
+                            <div class="overflow-visible">
                                 <table class="min-w-full divide-y divide-slate-100">
                                     <thead class="bg-slate-50/80">
                                         <tr>

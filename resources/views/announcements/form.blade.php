@@ -21,7 +21,7 @@
                         <p class="mt-1 text-sm text-slate-500">Lengkapi form di bawah ini dengan data pengumuman yang sesuai.</p>
                     </div>
 
-                    <form action="{{ $action }}" method="POST">
+                    <form action="{{ $action }}" method="POST" data-ajax-form>
                         @csrf
                         @if ($method !== 'POST')
                             @method($method)
@@ -31,15 +31,14 @@
                             
                             <div>
                                 <label for="scholarship_id" class="mb-2 block text-sm font-semibold text-slate-700">Beasiswa <span class="text-rose-500">*</span></label>
-                                <select name="scholarship_id" id="scholarship_id" required
-                                    class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-600 transition-all focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10">
-                                    <option value="" disabled {{ old('scholarship_id', $announcement->scholarship_id) ? '' : 'selected' }}>Pilih Beasiswa</option>
-                                    @foreach($scholarships as $scholarship)
-                                        <option value="{{ $scholarship->id }}" {{ old('scholarship_id', $announcement->scholarship_id) == $scholarship->id ? 'selected' : '' }}>
-                                            {{ $scholarship->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                                <x-searchable-dropdown 
+                                    name="scholarship_id" 
+                                    id="scholarship_id" 
+                                    placeholder="Pilih Beasiswa"
+                                    :options="$scholarships->map(fn($s) => ['id' => $s->id, 'name' => $s->scholarship_name])"
+                                    :value="old('scholarship_id', $announcement->scholarship_id)"
+                                    :showFooter="false"
+                                />
                                 @error('scholarship_id')
                                     <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
                                 @enderror
@@ -68,11 +67,18 @@
 
                             <div>
                                 <label for="publish_status" class="mb-2 block text-sm font-semibold text-slate-700">Status Publikasi <span class="text-rose-500">*</span></label>
-                                <select name="publish_status" id="publish_status" required
-                                    class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-600 transition-all focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10">
-                                    <option value="1" {{ old('publish_status', $announcement->publish_status) == '1' ? 'selected' : '' }}>Dipublikasi</option>
-                                    <option value="0" {{ old('publish_status', $announcement->publish_status) == '0' ? 'selected' : '' }}>Draft</option>
-                                </select>
+                                <x-searchable-dropdown 
+                                    name="publish_status" 
+                                    id="publish_status" 
+                                    placeholder="Pilih Status"
+                                    :options="[
+                                        ['id' => 1, 'name' => 'Dipublikasi'],
+                                        ['id' => 0, 'name' => 'Draft'],
+                                    ]"
+                                    :value="old('publish_status', $announcement->publish_status)"
+                                    :showFooter="false"
+                                    compact
+                                />
                                 @error('publish_status')
                                     <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
                                 @enderror

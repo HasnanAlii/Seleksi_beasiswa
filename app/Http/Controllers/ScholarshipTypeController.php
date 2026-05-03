@@ -40,6 +40,14 @@ class ScholarshipTypeController extends Controller
 
         ScholarshipType::create($validated);
 
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Jenis beasiswa berhasil ditambahkan.',
+                'redirect' => route('scholarship-types.index'),
+            ], 201);
+        }
+
         return redirect()->route('scholarship-types.index')
             ->with('success', 'Jenis beasiswa berhasil ditambahkan.');
     }
@@ -65,6 +73,14 @@ class ScholarshipTypeController extends Controller
 
         $scholarshipType->update($validated);
 
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Jenis beasiswa berhasil diperbarui.',
+                'redirect' => route('scholarship-types.index'),
+            ]);
+        }
+
         return redirect()->route('scholarship-types.index')
             ->with('success', 'Jenis beasiswa berhasil diperbarui.');
     }
@@ -72,6 +88,14 @@ class ScholarshipTypeController extends Controller
     public function destroy(ScholarshipType $scholarshipType)
     {
         $scholarshipType->delete();
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Jenis beasiswa berhasil dihapus.',
+                'redirect' => route('scholarship-types.index'),
+            ]);
+        }
 
         return redirect()->route('scholarship-types.index')
             ->with('success', 'Jenis beasiswa berhasil dihapus.');

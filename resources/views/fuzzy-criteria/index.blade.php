@@ -56,8 +56,8 @@
                         </div>
 
                         {{-- Table --}}
-                        <div class="rounded-2xl border border-slate-200 bg-white">
-                            <div class="overflow-x-auto">
+                        <div class="rounded-2xl border border-slate-200 bg-white overflow-visible">
+                            <div class="overflow-visible">
                                 <table class="min-w-full divide-y divide-slate-100">
                                     <thead class="bg-slate-50/80">
                                         <tr>
@@ -78,9 +78,8 @@
                                                     <div class="font-bold text-blue-600">{{ $item->criteria_name }}</div>
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-center">
-                                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold
-                                                        {{ $item->memberships->count() > 0 ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-500' }}">
-                                                        <div class="w-2 h-2 rounded-full {{ $item->memberships->count() > 0 ? 'bg-indigo-500' : 'bg-slate-400' }}"></div>
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider
+                                                        {{ $item->memberships->count() > 0 ? 'bg-indigo-50 text-indigo-600 border border-indigo-100/50' : 'bg-slate-50 text-slate-500 border border-slate-100/50' }}">
                                                         {{ $item->memberships->count() }} Keanggotaan
                                                     </span>
                                                 </td>

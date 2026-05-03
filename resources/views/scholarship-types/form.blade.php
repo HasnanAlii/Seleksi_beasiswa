@@ -25,7 +25,7 @@
                         <p class="text-sm text-slate-500 mt-1">Isi data jenis/kategori beasiswa di bawah ini.</p>
                     </div>
 
-                    <form action="{{ $action }}" method="POST">
+                    <form action="{{ $action }}" method="POST" data-ajax-form>
                         @csrf
                         @if($method === 'PUT')
                             @method('PUT')
@@ -40,7 +40,7 @@
                                 <input type="text" name="name" required
                                     value="{{ old('name', $scholarshipType->name) }}"
                                     placeholder="Masukkan nama jenis beasiswa"
-                                    class="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('name') border-rose-500 focus:ring-rose-500/10 @enderror">
+                                    class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('name') border-rose-500 focus:ring-rose-500/10 @enderror">
                                 @error('name')
                                     <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
                                 @enderror
@@ -53,7 +53,7 @@
                                 </label>
                                 <textarea name="description" rows="4"
                                     placeholder="Keterangan singkat mengenai jenis beasiswa ini..."
-                                    class="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('description') border-rose-500 focus:ring-rose-500/10 @enderror">{{ old('description', $scholarshipType->description) }}</textarea>
+                                    class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('description') border-rose-500 focus:ring-rose-500/10 @enderror">{{ old('description', $scholarshipType->description) }}</textarea>
                                 @error('description')
                                     <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
                                 @enderror

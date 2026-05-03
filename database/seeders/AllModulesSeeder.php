@@ -32,11 +32,11 @@ class AllModulesSeeder extends Seeder
         // ============================================================
         $requirementIds = [];
         $requirements = [
-            ['requirement_name' => 'Transkrip Nilai', 'rules' => 'IPK minimal 3.00, terbaru dari semester terakhir.'],
-            ['requirement_name' => 'Surat Rekomendasi', 'rules' => 'Dari dosen wali atau kaprodi, bermaterai 10.000.'],
-            ['requirement_name' => 'KTP / Kartu Mahasiswa', 'rules' => 'Masih berlaku, scan berwarna.'],
-            ['requirement_name' => 'Surat Keterangan Tidak Mampu', 'rules' => 'Dikeluarkan oleh kelurahan, tidak lebih dari 3 bulan.'],
-            ['requirement_name' => 'Esai Motivasi', 'rules' => 'Minimal 500 kata, format PDF.'],
+            ['requirement_name' => 'Transkrip Nilai'],
+            ['requirement_name' => 'Surat Rekomendasi'],
+            ['requirement_name' => 'KTP / Kartu Mahasiswa'],
+            ['requirement_name' => 'Surat Keterangan Tidak Mampu'],
+            ['requirement_name' => 'Esai Motivasi'],
         ];
         foreach ($requirements as $data) {
             $requirementIds[] = DB::table('requirements')->insertGetId(array_merge($data, [
@@ -87,7 +87,7 @@ class AllModulesSeeder extends Seeder
             DB::table('scholarship_requirements')->insert([
                 'scholarship_id' => $scholarshipId,
                 'requirement_id' => $requirementIds[$i],
-                'status' => $srStatuses[$i],
+                'terms' => 'Ketentuan khusus untuk persyaratan ini.',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -201,14 +201,14 @@ class AllModulesSeeder extends Seeder
         // ============================================================
         // 12. FUZZY MEMBERSHIPS
         // ============================================================
-        $membershipLabels = ['rendah', 'sedang', 'tinggi', 'rendah', 'sedang'];
+
         $minValues = [0, 2.0, 3.0, 0, 1000000];
         $midValues = [1.5, 2.75, 3.5, 50, 3000000];
         $maxValues = [2.0, 3.0, 4.0, 100, 5000000];
         foreach ($fuzzyCriteriaIds as $i => $criteriaId) {
             DB::table('fuzzy_memberships')->insert([
+                'scholarship_id' => $scholarshipIds[$i % count($scholarshipIds)],
                 'criteria_id' => $criteriaId,
-                'label' => $membershipLabels[$i],
                 'min_value' => $minValues[$i],
                 'mid_value' => $midValues[$i],
                 'max_value' => $maxValues[$i],

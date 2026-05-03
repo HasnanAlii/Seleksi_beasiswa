@@ -23,49 +23,44 @@
                         <p class="text-sm text-slate-500 mt-1">Tentukan nilai batas bawah, tengah, dan atas untuk setiap label kriteria fuzzy.</p>
                     </div>
 
-                    <form action="{{ $action }}" method="POST">
+                    <form action="{{ $action }}" method="POST" data-ajax-form>
                         @csrf
                         @if($method === 'PUT') @method('PUT') @endif
 
                         <div class="space-y-6">
+                            {{-- Beasiswa --}}
+                            <div>
+                                <label for="scholarship_id" class="block text-sm font-semibold text-slate-700 mb-2">Untuk Beasiswa <span class="text-rose-500">*</span></label>
+                                <x-searchable-dropdown 
+                                    name="scholarship_id" 
+                                    id="scholarship_id" 
+                                    placeholder="Pilih Beasiswa"
+                                    :options="$scholarships->map(fn($s) => ['id' => $s->id, 'name' => $s->scholarship_name])"
+                                    :value="old('scholarship_id', $membership->scholarship_id)"
+                                    :showFooter="false"
+                                />
+                                @error('scholarship_id')
+                                    <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
+                                @enderror
+                            </div>
 
                             {{-- Kriteria --}}
                             <div>
                                 <label for="criteria_id" class="block text-sm font-semibold text-slate-700 mb-2">Kriteria Fuzzy <span class="text-rose-500">*</span></label>
-                                <select id="criteria_id" name="criteria_id" required
-                                    class="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('criteria_id') border-rose-500 @enderror">
-                                    <option value="">-- Pilih Kriteria --</option>
-                                    @foreach($criteriaList as $c)
-                                        <option value="{{ $c->id }}" {{ old('criteria_id', $membership->criteria_id) == $c->id ? 'selected' : '' }}>
-                                            {{ $c->criteria_name }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                                <x-searchable-dropdown 
+                                    name="criteria_id" 
+                                    id="criteria_id" 
+                                    placeholder="Pilih Kriteria"
+                                    :options="$criteriaList->map(fn($c) => ['id' => $c->id, 'name' => $c->criteria_name])"
+                                    :value="old('criteria_id', $membership->criteria_id)"
+                                    :showFooter="false"
+                                />
                                 @error('criteria_id')
                                     <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
                                 @enderror
                             </div>
 
-                            {{-- Label --}}
-                            <div>
-                                <label for="label" class="block text-sm font-semibold text-slate-700 mb-2">Label <span class="text-rose-500">*</span></label>
-                                <div class="grid grid-cols-3 gap-3">
-                                    @foreach(['rendah' => ['rose', 'Rendah'], 'sedang' => ['amber', 'Sedang'], 'tinggi' => ['emerald', 'Tinggi']] as $val => [$color, $text])
-                                    <label class="cursor-pointer">
-                                        <input type="radio" name="label" value="{{ $val }}" class="sr-only peer"
-                                            {{ old('label', $membership->label) == $val ? 'checked' : '' }} required>
-                                        <div class="flex items-center justify-center py-3 rounded-xl border-2 border-slate-200 font-bold text-sm text-slate-500
-                                            peer-checked:border-{{ $color }}-500 peer-checked:bg-{{ $color }}-50 peer-checked:text-{{ $color }}-700
-                                            hover:border-{{ $color }}-300 transition-all">
-                                            {{ $text }}
-                                        </div>
-                                    </label>
-                                    @endforeach
-                                </div>
-                                @error('label')
-                                    <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
-                                @enderror
-                            </div>
+
 
                             {{-- Nilai Min, Mid, Max --}}
                             <div class="grid grid-cols-3 gap-4">
@@ -74,7 +69,7 @@
                                     <input type="number" id="min_value" name="min_value" required step="any"
                                         value="{{ old('min_value', $membership->min_value) }}"
                                         placeholder="0"
-                                        class="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('min_value') border-rose-500 @enderror">
+                                        class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('min_value') border-rose-500 @enderror">
                                     @error('min_value')
                                         <p class="mt-1 text-xs text-rose-500">{{ $message }}</p>
                                     @enderror
@@ -84,7 +79,7 @@
                                     <input type="number" id="mid_value" name="mid_value" required step="any"
                                         value="{{ old('mid_value', $membership->mid_value) }}"
                                         placeholder="0"
-                                        class="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('mid_value') border-rose-500 @enderror">
+                                        class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('mid_value') border-rose-500 @enderror">
                                     @error('mid_value')
                                         <p class="mt-1 text-xs text-rose-500">{{ $message }}</p>
                                     @enderror
@@ -94,7 +89,7 @@
                                     <input type="number" id="max_value" name="max_value" required step="any"
                                         value="{{ old('max_value', $membership->max_value) }}"
                                         placeholder="0"
-                                        class="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('max_value') border-rose-500 @enderror">
+                                        class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('max_value') border-rose-500 @enderror">
                                     @error('max_value')
                                         <p class="mt-1 text-xs text-rose-500">{{ $message }}</p>
                                     @enderror

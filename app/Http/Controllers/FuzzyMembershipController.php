@@ -13,11 +13,11 @@ class FuzzyMembershipController extends Controller
         $filters = [
             'search' => $request->get('search', ''),
             'criteria_id' => $request->get('criteria_id', ''),
-            'label' => $request->get('label', ''),
+            'scholarship_id' => $request->get('scholarship_id', ''),
         ];
 
         $query = FuzzyMembership::query()
-            ->with('criteria')
+            ->with(['criteria', 'scholarship'])
             ->when($filters['search'], function ($q, $search) {
                 return $q->whereHas('criteria', function ($qC) use ($search) {
                     $qC->where('criteria_name', 'like', "%{$search}%");
@@ -26,19 +26,20 @@ class FuzzyMembershipController extends Controller
             ->when($filters['criteria_id'], function ($q, $criteriaId) {
                 return $q->where('criteria_id', $criteriaId);
             })
-            ->when($filters['label'], function ($q, $label) {
-                return $q->where('label', $label);
+            ->when($filters['scholarship_id'], function ($q, $scholarshipId) {
+                return $q->where('scholarship_id', $scholarshipId);
             })
             ->latest();
 
         $data = $query->paginate(15)->withQueryString();
         $criteriaList = FuzzyCriteria::orderBy('criteria_name')->get();
+        $scholarships = \App\Models\Scholarship::orderBy('scholarship_name')->get();
 
         if (request()->ajax()) {
             return response()->json(['data' => $data]);
         }
 
-        return view('fuzzy-memberships.index', compact('data', 'filters', 'criteriaList'));
+        return view('fuzzy-memberships.index', compact('data', 'filters', 'criteriaList', 'scholarships'));
     }
 
     public function create()
@@ -49,6 +50,7 @@ class FuzzyMembershipController extends Controller
             'method' => 'POST',
             'submitLabel' => 'Simpan Keanggotaan',
             'criteriaList' => FuzzyCriteria::orderBy('criteria_name')->get(),
+            'scholarships' => \App\Models\Scholarship::orderBy('scholarship_name')->get(),
         ]);
     }
 
@@ -89,6 +91,7 @@ class FuzzyMembershipController extends Controller
             'method' => 'PUT',
             'submitLabel' => 'Simpan Perubahan',
             'criteriaList' => FuzzyCriteria::orderBy('criteria_name')->get(),
+            'scholarships' => \App\Models\Scholarship::orderBy('scholarship_name')->get(),
         ]);
     }
 
@@ -131,8 +134,8 @@ class FuzzyMembershipController extends Controller
     private function rules(): array
     {
         return [
+            'scholarship_id' => 'required|integer|exists:scholarships,id',
             'criteria_id' => 'required|integer|exists:fuzzy_criteria,id',
-            'label' => 'required|string|in:rendah,sedang,tinggi',
             'min_value' => 'required|numeric',
             'mid_value' => 'required|numeric',
             'max_value' => 'required|numeric',

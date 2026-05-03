@@ -81,7 +81,7 @@
 
                                 <!-- Drop Zone -->
                                 <div @click="$refs.galleryInput.click()"
-                                    :class="dragOver ? 'border-blue-400 bg-blue-50/40' : 'border-slate-100 bg-slate-50/50 hover:border-blue-400 hover:bg-blue-50/30'"
+                                    :class="dragOver ? 'border-blue-400 bg-blue-50/40' : 'border-slate-100 bg-white/50 hover:border-blue-400 hover:bg-blue-50/30'"
                                     class="relative group h-32 w-full border-2 border-dashed rounded-[2rem] overflow-hidden transition-all cursor-pointer flex flex-col items-center justify-center space-y-2">
                                     <input type="file" name="additional_photos[]" x-ref="galleryInput"
                                         class="hidden" accept="image/*" multiple

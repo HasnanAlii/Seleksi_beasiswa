@@ -152,8 +152,8 @@
                 </div>
 
                 {{-- INFORMASI --}}
-                <div class="mt-7">
-                    <p class="px-2 mb-2 text-xs font-extrabold text-[#74b3ea] uppercase tracking-widest">Informasi</p>
+                {{-- <div class="mt-7">
+                    <p class="px-2 mb-2 text-xs font-extrabold text-[#74b3ea] uppercase tracking-widest">Informasi</p> --}}
                     <div class="space-y-1">
 
                         {{-- Berita --}}
@@ -169,7 +169,7 @@
                         </div>
 
                         {{-- Pengumuman --}}
-                        <div>
+                        {{-- <div>
                             <a href="{{ route('announcements.index') }}" title="Pengumuman"
                                 class="relative flex items-center gap-3.5 px-4 py-3.5 text-sm font-extrabold rounded-xl transition-all duration-200 group {{ request()->routeIs('announcements.index') ? 'bg-white/10 ring-1 ring-white/20 text-white shadow-lg backdrop-blur-sm' : 'text-white hover:bg-white/5' }}">
                                 @if (request()->routeIs('announcements.index'))
@@ -178,12 +178,13 @@
                                 <i data-feather="bell" class="w-5 h-5 {{ request()->routeIs('announcements.index') ? 'text-white fill-[#ffffff33]' : 'text-[#87abc9] group-hover:text-white' }}"></i>
                                 <span>Pengumuman</span>
                             </a>
-                        </div>
+                        </div> --}}
                     </div>
-                </div>
+                {{-- </div> --}}
+
                 {{-- METODE FUZZY --}}
                 <div class="mt-7">
-                    <p class="px-2 mb-2 text-xs font-extrabold text-[#74b3ea] uppercase tracking-widest">Metode Fuzzy</p>
+                    <p class="px-2 mb-2 text-xs font-extrabold text-[#74b3ea] uppercase tracking-widest">Pengaturan Fuzzy</p>
                     <div class="space-y-1">
 
                         @php $isFuzzy = request()->routeIs('fuzzy-criteria.index') || request()->routeIs('fuzzy-memberships.index'); @endphp

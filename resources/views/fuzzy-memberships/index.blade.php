@@ -36,21 +36,27 @@
                             <form method="GET" action="{{ route('fuzzy-memberships.index') }}" class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6 items-end">
                                 <div class="flex flex-col xl:col-span-2">
                                     <label for="filter_criteria" class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">Filter Kriteria</label>
-                                    <select id="filter_criteria" name="criteria_id" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-[7px] text-[13px] font-bold text-slate-600 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm min-h-[38px]">
-                                        <option value="">Semua Kriteria</option>
-                                        @foreach($criteriaList as $c)
-                                            <option value="{{ $c->id }}" {{ ($filters['criteria_id'] ?? '') == $c->id ? 'selected' : '' }}>{{ $c->criteria_name }}</option>
-                                        @endforeach
-                                    </select>
+                                    <x-searchable-dropdown 
+                                        name="criteria_id" 
+                                        id="filter_criteria" 
+                                        placeholder="Semua Kriteria"
+                                        :options="$criteriaList->map(fn($c) => ['id' => $c->id, 'name' => $c->criteria_name])"
+                                        :value="$filters['criteria_id'] ?? ''"
+                                        :showFooter="false"
+                                        compact
+                                    />
                                 </div>
                                 <div class="flex flex-col xl:col-span-2">
-                                    <label for="filter_label" class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">Filter Label</label>
-                                    <select id="filter_label" name="label" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-[7px] text-[13px] font-bold text-slate-600 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm min-h-[38px]">
-                                        <option value="">Semua Label</option>
-                                        <option value="rendah" {{ ($filters['label'] ?? '') == 'rendah' ? 'selected' : '' }}>Rendah</option>
-                                        <option value="sedang" {{ ($filters['label'] ?? '') == 'sedang' ? 'selected' : '' }}>Sedang</option>
-                                        <option value="tinggi" {{ ($filters['label'] ?? '') == 'tinggi' ? 'selected' : '' }}>Tinggi</option>
-                                    </select>
+                                    <label for="filter_scholarship" class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">Filter Beasiswa</label>
+                                    <x-searchable-dropdown 
+                                        name="scholarship_id" 
+                                        id="filter_scholarship" 
+                                        placeholder="Semua Beasiswa"
+                                        :options="$scholarships->map(fn($s) => ['id' => $s->id, 'name' => $s->scholarship_name])"
+                                        :value="$filters['scholarship_id'] ?? ''"
+                                        :showFooter="false"
+                                        compact
+                                    />
                                 </div>
                                 <div class="xl:col-span-1"></div>
                                 <div class="flex flex-col">
@@ -62,14 +68,14 @@
                         </div>
 
                         {{-- Table --}}
-                        <div class="rounded-2xl border border-slate-200 bg-white">
-                            <div class="overflow-x-auto">
+                        <div class="rounded-2xl border border-slate-200 bg-white overflow-visible">
+                            <div class="overflow-visible">
                                 <table class="min-w-full divide-y divide-slate-100">
                                     <thead class="bg-slate-50/80">
                                         <tr>
                                             <th class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">No</th>
                                             <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Kriteria</th>
-                                            <th class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Label</th>
+                                            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Beasiswa</th>
                                             <th class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Min</th>
                                             <th class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Mid</th>
                                             <th class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Max</th>
@@ -85,24 +91,23 @@
                                                 <td class="px-6 py-4 text-left">
                                                     <div class="font-bold text-blue-600">{{ $item->criteria->criteria_name }}</div>
                                                 </td>
+                                                <td class="px-6 py-4 text-left">
+                                                    <div class="text-sm font-semibold text-slate-600">{{ $item->scholarship->scholarship_name }}</div>
+                                                </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-center">
-                                                    @php
-                                                        $labelColors = ['rendah' => 'bg-rose-100 text-rose-700', 'sedang' => 'bg-amber-100 text-amber-700', 'tinggi' => 'bg-emerald-100 text-emerald-700'];
-                                                        $badgeClass = $labelColors[$item->label] ?? 'bg-slate-100 text-slate-700';
-                                                    @endphp
-                                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold {{ $badgeClass }}">
-                                                        <div class="w-2 h-2 rounded-full {{ match($item->label) { 'tinggi' => 'bg-emerald-500', 'rendah' => 'bg-rose-500', default => 'bg-amber-500' } }}"></div>
-                                                        {{ ucfirst($item->label) }}
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-black bg-rose-50 text-rose-600 border border-rose-100/50">
+                                                        {{ number_format($item->min_value, 2) }}
                                                     </span>
                                                 </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-bold text-slate-700">
-                                                    {{ number_format($item->min_value, 2) }}
+                                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-black bg-blue-50 text-blue-600 border border-blue-100/50">
+                                                        {{ number_format($item->mid_value, 2) }}
+                                                    </span>
                                                 </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-bold text-slate-700">
-                                                    {{ number_format($item->mid_value, 2) }}
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-bold text-slate-700">
-                                                    {{ number_format($item->max_value, 2) }}
+                                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-black bg-emerald-50 text-emerald-600 border border-emerald-100/50">
+                                                        {{ number_format($item->max_value, 2) }}
+                                                    </span>
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                                     <div class="relative flex justify-center" x-data="{ open: false }">

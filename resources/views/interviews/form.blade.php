@@ -23,7 +23,7 @@
                         <p class="text-sm text-slate-500 mt-1">Isi jadwal dan pendaftar yang akan diwawancara.</p>
                     </div>
 
-                    <form action="{{ $action }}" method="POST">
+                    <form action="{{ $action }}" method="POST" data-ajax-form>
                         @csrf
                         @if($method === 'PUT')
                             @method('PUT')
@@ -33,15 +33,14 @@
                             {{-- Pendaftaran --}}
                             <div>
                                 <label for="application_id" class="block text-sm font-semibold text-slate-700 mb-2">Pendaftaran (Mahasiswa) <span class="text-rose-500">*</span></label>
-                                <select id="application_id" name="application_id" required
-                                    class="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('application_id') border-rose-500 @enderror">
-                                    <option value="">-- Pilih Pendaftar --</option>
-                                    @foreach($applications as $app)
-                                        <option value="{{ $app->id }}" {{ old('application_id', $interview->application_id) == $app->id ? 'selected' : '' }}>
-                                            {{ $app->student->name }} — {{ $app->scholarship->scholarship_name }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                                <x-searchable-dropdown 
+                                    name="application_id" 
+                                    id="application_id" 
+                                    placeholder="Pilih Pendaftar"
+                                    :options="$applications->map(fn($app) => ['id' => $app->id, 'name' => $app->student->name . ' — ' . $app->scholarship->scholarship_name])"
+                                    :value="old('application_id', $interview->application_id)"
+                                    :showFooter="false"
+                                />
                                 @error('application_id')
                                     <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
                                 @enderror
@@ -52,7 +51,7 @@
                                 <label for="schedule" class="block text-sm font-semibold text-slate-700 mb-2">Tanggal & Waktu Wawancara <span class="text-rose-500">*</span></label>
                                 <input type="datetime-local" id="schedule" name="schedule" required
                                     value="{{ old('schedule', $interview->schedule ? $interview->schedule->format('Y-m-d\TH:i') : '') }}"
-                                    class="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('schedule') border-rose-500 @enderror">
+                                    class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('schedule') border-rose-500 @enderror">
                                 @error('schedule')
                                     <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
                                 @enderror
@@ -62,7 +61,7 @@
                             <div>
                                 <label for="description" class="block text-sm font-semibold text-slate-700 mb-2">Catatan / Keterangan</label>
                                 <textarea id="description" name="description" rows="4"
-                                    class="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('description') border-rose-500 @enderror"
+                                    class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('description') border-rose-500 @enderror"
                                     placeholder="Opsional...">{{ old('description', $interview->description) }}</textarea>
                                 @error('description')
                                     <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>

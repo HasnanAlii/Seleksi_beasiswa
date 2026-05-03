@@ -23,7 +23,7 @@
                         <p class="text-sm text-slate-500 mt-1">Masukkan nama kriteria yang digunakan dalam metode fuzzy.</p>
                     </div>
 
-                    <form action="{{ $action }}" method="POST">
+                    <form action="{{ $action }}" method="POST" data-ajax-form>
                         @csrf
                         @if($method === 'PUT') @method('PUT') @endif
 
@@ -37,7 +37,7 @@
                                 <input type="text" id="criteria_name" name="criteria_name" required
                                     value="{{ old('criteria_name', $fuzzyCriteria->criteria_name) }}"
                                     placeholder="Masukkan nama kriteria"
-                                    class="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('criteria_name') border-rose-500 @enderror">
+                                    class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('criteria_name') border-rose-500 @enderror">
                                 @error('criteria_name')
                                     <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
                                 @enderror

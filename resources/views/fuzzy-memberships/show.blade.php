@@ -18,14 +18,7 @@
 
                 {{-- Header Banner --}}
                 @php
-                    $bannerColors = [
-                        'rendah' => 'from-rose-500 to-red-600',
-                        'sedang' => 'from-amber-500 to-orange-500',
-                        'tinggi' => 'from-emerald-500 to-teal-600',
-                    ];
-                    $labelNames = ['rendah' => 'Rendah', 'sedang' => 'Sedang', 'tinggi' => 'Tinggi'];
-                    $bannerClass = $bannerColors[$membership->label] ?? 'from-slate-500 to-slate-600';
-                    $labelText = $labelNames[$membership->label] ?? ucfirst($membership->label);
+                    $bannerClass = 'from-blue-500 to-indigo-600';
                 @endphp
                 <div class="bg-gradient-to-r {{ $bannerClass }} px-8 py-10 text-white relative overflow-hidden">
                     <div class="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-white opacity-10 rounded-full blur-3xl"></div>
@@ -34,7 +27,6 @@
                         <div>
                             <span class="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full border border-white/30 backdrop-blur-sm mb-4 inline-block">Keanggotaan #{{ $membership->id }}</span>
                             <h3 class="text-3xl font-extrabold">{{ $membership->criteria->criteria_name }}</h3>
-                            <p class="text-white/70 mt-1 text-sm">Label: <span class="font-semibold text-white/90">{{ $labelText }}</span></p>
                         </div>
                         <div class="text-right bg-white/10 rounded-2xl px-6 py-4 backdrop-blur-sm border border-white/20">
                             <div class="flex items-center gap-4 text-white">
@@ -67,8 +59,8 @@
                                 <div class="text-base font-bold text-slate-800">{{ $membership->criteria->criteria_name }}</div>
                             </div>
                             <div>
-                                <div class="text-xs font-semibold text-slate-400 mb-1">Label</div>
-                                <div class="text-base font-bold text-slate-800">{{ $labelText }}</div>
+                                <div class="text-xs font-semibold text-slate-400 mb-1">Beasiswa</div>
+                                <div class="text-base font-bold text-slate-800">{{ $membership->scholarship->scholarship_name }}</div>
                             </div>
                         </div>
                     </div>

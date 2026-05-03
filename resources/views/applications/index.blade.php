@@ -53,14 +53,15 @@
                                 <!-- Filter Beasiswa -->
                                 <div class="flex flex-col xl:col-span-2">
                                     <label for="filter_scholarship" class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">Filter Beasiswa</label>
-                                    <select id="filter_scholarship" name="scholarship_id" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-[7px] text-[13px] font-bold text-slate-600 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm min-h-[38px]">
-                                        <option value="">Semua Beasiswa</option>
-                                        @foreach($scholarships as $scholarship)
-                                            <option value="{{ $scholarship->id }}" {{ ($filters['scholarship_id'] ?? '') == $scholarship->id ? 'selected' : '' }}>
-                                                {{ $scholarship->scholarship_name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
+                                    <x-searchable-dropdown 
+                                        name="scholarship_id" 
+                                        id="filter_scholarship" 
+                                        placeholder="Semua Beasiswa"
+                                        :options="$scholarships->map(fn($s) => ['id' => $s->id, 'name' => $s->scholarship_name])"
+                                        :value="$filters['scholarship_id'] ?? ''"
+                                        :showFooter="false"
+                                        compact
+                                    />
                                 </div>
 
                                 <div class="xl:col-span-1"></div>
@@ -75,8 +76,8 @@
                         </div>
 
                         {{-- Table --}}
-                        <div class="rounded-2xl border border-slate-200 bg-white">
-                            <div class="overflow-x-auto">
+                        <div class="rounded-2xl border border-slate-200 bg-white overflow-visible">
+                            <div class="overflow-visible">
                                 <table class="min-w-full divide-y divide-slate-100">
                                     <thead class="bg-slate-50/80">
                                         <tr>
@@ -102,23 +103,39 @@
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                                     @if($item->status == 'menunggu')
-                                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700">
-                                                            <div class="w-2 h-2 rounded-full bg-amber-500"></div>
+                                                        <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-600 border border-amber-100/50">
+                                                            <div class="flex items-center justify-center w-5 h-5 rounded-full bg-amber-500 text-white">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                                                                </svg>
+                                                            </div>
                                                             Menunggu
                                                         </span>
                                                     @elseif($item->status == 'diproses')
-                                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700">
-                                                            <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                                                        <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-600 border border-blue-100/50">
+                                                            <div class="flex items-center justify-center w-5 h-5 rounded-full bg-blue-500 text-white">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                                                                </svg>
+                                                            </div>
                                                             Diproses
                                                         </span>
                                                     @elseif($item->status == 'diterima')
-                                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
-                                                            <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                                                        <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-100/50">
+                                                            <div class="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500 text-white">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                                                </svg>
+                                                            </div>
                                                             Diterima
                                                         </span>
                                                     @else
-                                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-700">
-                                                            <div class="w-2 h-2 rounded-full bg-rose-500"></div>
+                                                        <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-rose-50 text-rose-600 border border-rose-100/50">
+                                                            <div class="flex items-center justify-center w-5 h-5 rounded-full bg-rose-500 text-white">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                                                </svg>
+                                                            </div>
                                                             Ditolak
                                                         </span>
                                                     @endif

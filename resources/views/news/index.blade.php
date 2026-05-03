@@ -62,13 +62,13 @@
                         </div>
 
                         {{-- Table --}}
-                        <div class="rounded-2xl border border-slate-200 bg-white">
-                            <div class="overflow-x-auto">
+                        <div class="rounded-2xl border border-slate-200 bg-white overflow-visible">
+                            <div class="overflow-visible">
                                 <table class="min-w-full divide-y divide-slate-100">
                                     <thead class="bg-slate-50/80">
                                         <tr>
                                             <th class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">No</th>
-                                            <th class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Foto</th>
+                                            {{-- <th class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Foto</th> --}}
                                             <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Judul Berita</th>
                                             <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Isi Berita</th>
                                             <th class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Aksi</th>
@@ -79,7 +79,7 @@
                                                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium text-slate-400">
                                                     {{ $data->firstItem() + $key }}
                                                 </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                                {{-- <td class="px-6 py-4 whitespace-nowrap text-center">
                                                     <div class="inline-flex h-10 w-10 overflow-hidden rounded-xl bg-slate-100 border border-slate-200 shadow-sm">
                                                         @php $cover = $item->media->first(); @endphp
                                                         @if($cover)
@@ -92,7 +92,7 @@
                                                             </div>
                                                         @endif
                                                     </div>
-                                                </td>
+                                                </td> --}}
                                                 <td class="px-6 py-4 whitespace-nowrap text-left text-sm font-bold text-blue-600">{{ $item->title }}</td>
                                                 <td class="px-6 py-4 text-left text-sm text-slate-500 max-w-md truncate">{{ $item->content }}</td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-center">

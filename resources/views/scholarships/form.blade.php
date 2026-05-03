@@ -23,7 +23,7 @@
                         <p class="mt-1 text-sm text-slate-500">Lengkapi semua informasi beasiswa dengan lengkap dan benar.</p>
                     </div>
 
-                    <form action="{{ $action }}" method="POST">
+                    <form action="{{ $action }}" method="POST" data-ajax-form>
                         @csrf
                         @if ($method !== 'POST')
                             @method($method)
@@ -38,7 +38,7 @@
                                 </label>
                                 <input type="text" name="scholarship_name" id="scholarship_name"
                                     value="{{ old('scholarship_name', $scholarship->scholarship_name) }}" required
-                                    class="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('scholarship_name') border-rose-500 @enderror"
+                                    class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('scholarship_name') border-rose-500 @enderror"
                                     placeholder="Masukkan nama beasiswa">
                                 @error('scholarship_name')
                                     <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
@@ -50,15 +50,14 @@
                                 <label for="scholarship_type" class="mb-2 block text-sm font-semibold text-slate-700">
                                     Jenis Beasiswa <span class="text-rose-500">*</span>
                                 </label>
-                                <select name="scholarship_type" id="scholarship_type" required
-                                    class="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('scholarship_type') border-rose-500 @enderror">
-                                    <option value="">Pilih jenis beasiswa</option>
-                                    @foreach($scholarshipTypes as $type)
-                                        <option value="{{ $type->name }}" {{ old('scholarship_type', $scholarship->scholarship_type) === $type->name ? 'selected' : '' }}>
-                                            {{ $type->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                                <x-searchable-dropdown 
+                                    name="scholarship_type" 
+                                    id="scholarship_type" 
+                                    placeholder="Pilih jenis beasiswa"
+                                    :options="$scholarshipTypes->map(fn($type) => ['id' => $type->name, 'name' => $type->name])"
+                                    :value="old('scholarship_type', $scholarship->scholarship_type)"
+                                    :showFooter="false"
+                                />
                                 @error('scholarship_type')
                                     <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
                                 @enderror
@@ -68,7 +67,7 @@
                             <div>
                                 <label for="description" class="mb-2 block text-sm font-semibold text-slate-700">Ketentuan Beasiswa</label>
                                 <textarea name="description" id="description" rows="5"
-                                    class="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('description') border-rose-500 @enderror"
+                                    class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('description') border-rose-500 @enderror"
                                     placeholder="Masukkan ketentuan beasiswa">{{ old('description', $scholarship->description) }}</textarea>
                                 @error('description')
                                     <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
@@ -83,7 +82,7 @@
                                         Kelola Persyaratan
                                     </a>
                                 </div>
-                                <div class="space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                                <div class="space-y-2 rounded-xl border border-slate-200 bg-white p-4">
                                     @forelse($requirements as $requirement)
                                         <div class="rounded-lg bg-white px-3 py-3 text-sm text-slate-700 shadow-sm">
                                             <label class="flex items-start gap-3">
@@ -98,7 +97,7 @@
                                                 </label>
                                                 <textarea name="requirement_terms[{{ $requirement->id }}]" rows="2"
                                                     placeholder="Masukkan ketentuan"
-                                                    class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10">{{ old('requirement_terms.' . $requirement->id, $requirementTerms[$requirement->id] ?? '') }}</textarea>
+                                                    class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10">{{ old('requirement_terms.' . $requirement->id, $requirementTerms[$requirement->id] ?? '') }}</textarea>
                                             </div>
                                         </div>
                                     @empty
@@ -127,7 +126,7 @@
                                     </label>
                                     <input type="number" name="quota" id="quota" min="1"
                                         value="{{ old('quota', $scholarship->quota) }}" required
-                                        class="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('quota') border-rose-500 @enderror"
+                                        class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('quota') border-rose-500 @enderror"
                                         placeholder="Masukkan jumlah kuota">
                                     @error('quota')
                                         <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
@@ -140,7 +139,7 @@
                                     </label>
                                     <input type="date" name="validity_period" id="validity_period"
                                         value="{{ old('validity_period', $scholarship->validity_period ? $scholarship->validity_period->format('Y-m-d') : '') }}" required
-                                        class="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('validity_period') border-rose-500 @enderror">
+                                        class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('validity_period') border-rose-500 @enderror">
                                     @error('validity_period')
                                         <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
                                     @enderror

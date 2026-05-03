@@ -61,8 +61,8 @@
                         </div>
 
                         {{-- Table --}}
-                        <div class="rounded-2xl border border-slate-200 bg-white">
-                            <div class="overflow-x-auto">
+                        <div class="rounded-2xl border border-slate-200 bg-white overflow-visible">
+                            <div class="overflow-visible">
                                 <table class="min-w-full divide-y divide-slate-100">
                                     <thead class="bg-slate-50/80">
                                         <tr>
@@ -93,9 +93,13 @@
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                                     @php $score = (float) $item->score; @endphp
-                                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-extrabold
-                                                        {{ $score >= 80 ? 'bg-emerald-100 text-emerald-700' : ($score >= 60 ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700') }}">
-                                                        <div class="w-2 h-2 rounded-full {{ $score >= 80 ? 'bg-emerald-500' : ($score >= 60 ? 'bg-amber-500' : 'bg-rose-500') }}"></div>
+                                                    <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[11px] font-black tracking-wider
+                                                        {{ $score >= 80 ? 'bg-emerald-50 text-emerald-600 border border-emerald-100/50' : ($score >= 60 ? 'bg-amber-50 text-amber-600 border border-amber-100/50' : 'bg-rose-50 text-rose-600 border border-rose-100/50') }}">
+                                                        {{-- <div class="flex items-center justify-center w-5 h-5 rounded-full text-white {{ $score >= 80 ? 'bg-emerald-500' : ($score >= 60 ? 'bg-amber-500' : 'bg-rose-500') }}">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                            </svg>
+                                                        </div> --}}
                                                         {{ number_format($score, 2) }}
                                                     </span>
                                                 </td>

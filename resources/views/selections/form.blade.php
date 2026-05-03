@@ -23,7 +23,7 @@
                         <p class="text-sm text-slate-500 mt-1">Isi data proses seleksi pendaftar beasiswa.</p>
                     </div>
 
-                    <form action="{{ $action }}" method="POST">
+                    <form action="{{ $action }}" method="POST" data-ajax-form>
                         @csrf
                         @if($method === 'PUT') @method('PUT') @endif
 
@@ -32,15 +32,14 @@
                             {{-- Pendaftaran --}}
                             <div>
                                 <label for="application_id" class="block text-sm font-semibold text-slate-700 mb-2">Pendaftaran (Mahasiswa) <span class="text-rose-500">*</span></label>
-                                <select id="application_id" name="application_id" required
-                                    class="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('application_id') border-rose-500 @enderror">
-                                    <option value="">-- Pilih Pendaftar --</option>
-                                    @foreach($applications as $app)
-                                        <option value="{{ $app->id }}" {{ old('application_id', $selection->application_id) == $app->id ? 'selected' : '' }}>
-                                            {{ $app->student->name }} — {{ $app->scholarship->scholarship_name }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                                <x-searchable-dropdown 
+                                    name="application_id" 
+                                    id="application_id" 
+                                    placeholder="Pilih Pendaftar"
+                                    :options="$applications->map(fn($app) => ['id' => $app->id, 'name' => $app->student->name . ' — ' . $app->scholarship->scholarship_name])"
+                                    :value="old('application_id', $selection->application_id)"
+                                    :showFooter="false"
+                                />
                                 @error('application_id')
                                     <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
                                 @enderror
@@ -52,7 +51,7 @@
                                 <input type="text" id="stage" name="stage" required
                                     value="{{ old('stage', $selection->stage) }}"
                                     placeholder="Masukkan tahap seleksi"
-                                    class="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('stage') border-rose-500 @enderror">
+                                    class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('stage') border-rose-500 @enderror">
                                 @error('stage')
                                     <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
                                 @enderror
@@ -61,13 +60,20 @@
                             {{-- Status --}}
                             <div>
                                 <label for="status" class="block text-sm font-semibold text-slate-700 mb-2">Status <span class="text-rose-500">*</span></label>
-                                <select id="status" name="status" required
-                                    class="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('status') border-rose-500 @enderror">
-                                    <option value="verifikasi" {{ old('status', $selection->status) == 'verifikasi' ? 'selected' : '' }}>Verifikasi</option>
-                                    <option value="wawancara" {{ old('status', $selection->status) == 'wawancara' ? 'selected' : '' }}>Wawancara</option>
-                                    <option value="diterima" {{ old('status', $selection->status) == 'diterima' ? 'selected' : '' }}>Diterima</option>
-                                    <option value="tidak diterima" {{ old('status', $selection->status) == 'tidak diterima' ? 'selected' : '' }}>Tidak Diterima</option>
-                                </select>
+                                <x-searchable-dropdown 
+                                    name="status" 
+                                    id="status" 
+                                    placeholder="Pilih Status"
+                                    :options="[
+                                        ['id' => 'verifikasi', 'name' => 'Verifikasi'],
+                                        ['id' => 'wawancara', 'name' => 'Wawancara'],
+                                        ['id' => 'diterima', 'name' => 'Diterima'],
+                                        ['id' => 'tidak diterima', 'name' => 'Tidak Diterima'],
+                                    ]"
+                                    :value="old('status', $selection->status)"
+                                    :showFooter="false"
+                                    compact
+                                />
                                 @error('status')
                                     <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
                                 @enderror
@@ -78,7 +84,7 @@
                                 <label for="date" class="block text-sm font-semibold text-slate-700 mb-2">Tanggal Seleksi <span class="text-rose-500">*</span></label>
                                 <input type="datetime-local" id="date" name="date" required
                                     value="{{ old('date', $selection->date ? \Carbon\Carbon::parse($selection->date)->format('Y-m-d\TH:i') : '') }}"
-                                    class="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('date') border-rose-500 @enderror">
+                                    class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('date') border-rose-500 @enderror">
                                 @error('date')
                                     <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
                                 @enderror
@@ -88,7 +94,7 @@
                             <div>
                                 <label for="notes" class="block text-sm font-semibold text-slate-700 mb-2">Catatan</label>
                                 <textarea id="notes" name="notes" rows="4"
-                                    class="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('notes') border-rose-500 @enderror"
+                                    class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('notes') border-rose-500 @enderror"
                                     placeholder="Catatan atau keterangan seleksi (opsional)...">{{ old('notes', $selection->notes) }}</textarea>
                                 @error('notes')
                                     <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>

@@ -60,7 +60,7 @@
         this.$dispatch('selected', item);
     }
 }" x-modelable="selected" :class="open ? 'z-[100]' : 'z-10'" @click.outside="open = false"
-    class="relative w-full group select-none">
+    class="relative w-full group select-none" {{ $attributes }}>
 
     @php
         $disabledAttr =

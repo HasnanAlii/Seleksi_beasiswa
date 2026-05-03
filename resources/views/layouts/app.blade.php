@@ -215,7 +215,8 @@
                         <!-- Top Logo -->
                         <div class="flex justify-center mb-8">
                             <div class="flex items-center gap-2.5">
-                                <x-application-logo class="w-20 h-20 text-[#03235b]" />
+                                 <img src="{{ asset('images/icon/logo.png') }}"
+                                    class="h-16 ">
                             </div>
                         </div>
                         <!-- Main Icon image -->
@@ -359,6 +360,33 @@
     @isset($scripts)
         {{ $scripts }}
     @endisset
+
+    {{-- Script untuk memicu popup dari session Laravel --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            @if (session('success'))
+                window.dispatchEvent(new CustomEvent('show-notification', {
+                    detail: {
+                        type: 'success',
+                        title: 'Berhasil',
+                        message: "{{ session('success') }}",
+                        redirectUrl: null
+                    }
+                }));
+            @endif
+
+            @if (session('error'))
+                window.dispatchEvent(new CustomEvent('show-notification', {
+                    detail: {
+                        type: 'error',
+                        title: 'Gagal',
+                        message: "{{ session('error') }}",
+                        redirectUrl: null
+                    }
+                }));
+            @endif
+        });
+    </script>
 
 </body>
 

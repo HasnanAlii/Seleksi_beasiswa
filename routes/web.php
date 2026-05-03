@@ -2,17 +2,14 @@
 
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\ApplicationController;
-use App\Http\Controllers\ApplicationDocumentController;
 use App\Http\Controllers\FuzzyCriteriaController;
 use App\Http\Controllers\FuzzyMembershipController;
 use App\Http\Controllers\InterviewAssessmentController;
 use App\Http\Controllers\InterviewController;
 use App\Http\Controllers\NewsController;
-use App\Http\Controllers\NewsMediaController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RequirementController;
 use App\Http\Controllers\ScholarshipController;
-use App\Http\Controllers\ScholarshipRequirementController;
 use App\Http\Controllers\ScholarshipTypeController;
 use App\Http\Controllers\SelectionController;
 use App\Http\Controllers\StudentController;
@@ -63,15 +60,12 @@ Route::middleware('auth')->group(function () {
     Route::view('/students', 'students.index')->name('students.index');
     Route::view('/applications', 'applications.index')->name('applications.index');
     Route::view('/requirements', 'requirements.index')->name('requirements.index');
-    Route::view('/scholarship-requirements', 'scholarship-requirements.index')->name('scholarship-requirements.index');
     Route::view('/selections', 'selections.index')->name('selections.index');
     Route::view('/announcements', 'announcements.index')->name('announcements.index');
     Route::view('/fuzzy-criteria', 'fuzzy-criteria.index')->name('fuzzy-criteria.index');
     Route::view('/fuzzy-memberships', 'fuzzy-memberships.index')->name('fuzzy-memberships.index');
     Route::view('/interviews', 'interviews.index')->name('interviews.index');
     Route::view('/interview-assessments', 'interview-assessments.index')->name('interview-assessments.index');
-    Route::view('/news-media', 'news-media.index')->name('news-media.index');
-    Route::view('/application-documents', 'application-documents.index')->name('application-documents.index');
 });
 
 Route::middleware('auth')->group(function () {
@@ -181,27 +175,6 @@ Route::middleware('auth')->group(function () {
     Route::get('news/{news}', [NewsController::class, 'show'])->name('news.show');
     Route::put('news/{news}', [NewsController::class, 'update'])->name('news.update');
     Route::delete('news/{news}', [NewsController::class, 'destroy'])->name('news.destroy');
-
-    // News Media
-    Route::get('news-media', [NewsMediaController::class, 'index'])->name('news-media.index');
-    Route::post('news-media', [NewsMediaController::class, 'store']);
-    Route::get('news-media/{news_media}', [NewsMediaController::class, 'show']);
-    Route::put('news-media/{news_media}', [NewsMediaController::class, 'update']);
-    Route::delete('news-media/{news_media}', [NewsMediaController::class, 'destroy']);
-
-    // Application Documents
-    Route::get('application-documents', [ApplicationDocumentController::class, 'index'])->name('application-documents.index');
-    Route::post('application-documents', [ApplicationDocumentController::class, 'store']);
-    Route::get('application-documents/{application_document}', [ApplicationDocumentController::class, 'show']);
-    Route::put('application-documents/{application_document}', [ApplicationDocumentController::class, 'update']);
-    Route::delete('application-documents/{application_document}', [ApplicationDocumentController::class, 'destroy']);
-
-    // Scholarship Requirements
-    Route::get('scholarship-requirements', [ScholarshipRequirementController::class, 'index'])->name('scholarship-requirements.index');
-    Route::post('scholarship-requirements', [ScholarshipRequirementController::class, 'store']);
-    Route::get('scholarship-requirements/{scholarship_requirement}', [ScholarshipRequirementController::class, 'show']);
-    Route::put('scholarship-requirements/{scholarship_requirement}', [ScholarshipRequirementController::class, 'update']);
-    Route::delete('scholarship-requirements/{scholarship_requirement}', [ScholarshipRequirementController::class, 'destroy']);
 
 });
 

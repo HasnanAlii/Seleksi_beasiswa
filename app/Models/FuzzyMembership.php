@@ -12,12 +12,20 @@ class FuzzyMembership extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'scholarship_id',
         'criteria_id',
-        'label',
         'min_value',
         'mid_value',
         'max_value',
     ];
+
+    /**
+     * Get the scholarship that owns the membership.
+     */
+    public function scholarship()
+    {
+        return $this->belongsTo(Scholarship::class, 'scholarship_id');
+    }
 
     /**
      * Get the attributes that should be cast.
