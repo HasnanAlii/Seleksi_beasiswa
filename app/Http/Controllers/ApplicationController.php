@@ -139,7 +139,13 @@ class ApplicationController extends Controller
 
     public function show(Application $application)
     {
-        $application->load(['student', 'scholarship', 'interviews', 'selection']);
+        $application->load([
+            'student',
+            'scholarship.requirements.requirement',
+            'requirementValues.requirement',
+            'interviews.assessments',
+            'selection'
+        ]);
 
         if (request()->wantsJson()) {
             return response()->json([

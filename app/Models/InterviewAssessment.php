@@ -13,6 +13,23 @@ class InterviewAssessment extends Model
         'interviewer',
     ];
 
+    protected static function booted(): void
+    {
+        static::created(function (InterviewAssessment $assessment) {
+            $application = $assessment->interview->application;
+            if ($application) {
+                $application->selection()->updateOrCreate(
+                    ['application_id' => $application->id],
+                    [
+                        'stage' => 'Wawancara Selesai',
+                        'status' => 'siap di proses',
+                        'date' => now(),
+                    ]
+                );
+            }
+        });
+    }
+
     /**
      * Get the attributes that should be cast.
      *

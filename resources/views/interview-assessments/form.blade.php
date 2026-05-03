@@ -33,7 +33,7 @@
 
                             {{-- Wawancara --}}
                             <div>
-                                <label for="interview_id" class="block text-sm font-semibold text-slate-700 mb-2">Jadwal Wawancara <span class="text-rose-500">*</span></label>
+                                <label for="interview_id" class="block text-sm font-semibold text-slate-700 mb-2">Pendaftar <span class="text-rose-500">*</span></label>
                                 <x-searchable-dropdown 
                                     name="interview_id" 
                                     id="interview_id" 

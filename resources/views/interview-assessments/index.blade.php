@@ -93,7 +93,7 @@
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                                     @php $score = (float) $item->score; @endphp
-                                                    <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[11px] font-black tracking-wider
+                                                    <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[14px] font-black tracking-wider
                                                         {{ $score >= 80 ? 'bg-emerald-50 text-emerald-600 border border-emerald-100/50' : ($score >= 60 ? 'bg-amber-50 text-amber-600 border border-amber-100/50' : 'bg-rose-50 text-rose-600 border border-rose-100/50') }}">
                                                         {{-- <div class="flex items-center justify-center w-5 h-5 rounded-full text-white {{ $score >= 80 ? 'bg-emerald-500' : ($score >= 60 ? 'bg-amber-500' : 'bg-rose-500') }}">
                                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">

@@ -22,17 +22,26 @@
                 <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-10 text-white relative overflow-hidden">
                     <div class="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-white opacity-10 rounded-full blur-3xl"></div>
                     <div class="absolute bottom-0 left-0 -mb-10 -ml-10 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
-                    <div class="relative z-10">
-                        <div class="flex items-center gap-3 mb-4">
-                            <span class="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full border border-white/30 backdrop-blur-sm">
-                                Jadwal #{{ $interview->id }}
-                            </span>
-                            <span class="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full border border-white/30">
-                                {{ $interview->assessments->count() }} Penilaian
-                            </span>
+                    
+                    <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                        <div>
+                            <h3 class="text-3xl font-extrabold tracking-tight">{{ $interview->application->student->name }}</h3>
+                            <p class="text-indigo-100 mt-1 font-semibold text-lg">{{ $interview->application->scholarship->scholarship_name }}</p>
                         </div>
-                        <h3 class="text-3xl font-extrabold">{{ $interview->application->student->name }}</h3>
-                        <p class="text-indigo-100 mt-2 font-medium text-lg">{{ $interview->application->scholarship->scholarship_name }}</p>
+
+                        <div class="flex flex-col items-end">
+                            @if($interview->assessments->count() > 0)
+                                <span class="inline-flex items-center gap-2 bg-white text-emerald-600 text-sm font-black px-6 py-3 rounded-2xl shadow-xl shadow-black/10">
+                                    <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                                    SUDAH DINILAI
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-2 bg-white text-amber-600 text-sm font-black px-6 py-3 rounded-2xl shadow-xl shadow-black/10">
+                                    <div class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></div>
+                                    BELUM DINILAI
+                                </span>
+                            @endif
+                        </div>
                     </div>
                 </div>
 
@@ -72,16 +81,35 @@
                     {{-- Daftar Penilaian --}}
                     @if($interview->assessments->count() > 0)
                     <div>
-                        <h4 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 border-b border-slate-100 pb-2">Hasil Penilaian ({{ $interview->assessments->count() }})</h4>
-                        <div class="space-y-3">
+                        <h4 class="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 border-b border-slate-100 pb-2">Hasil Penilaian Wawancara</h4>
+                        <div class="space-y-4">
                             @foreach($interview->assessments as $assessment)
-                            <div class="flex items-center justify-between bg-slate-50 rounded-xl px-5 py-4 border border-slate-100">
-                                <div>
-                                    <div class="text-sm font-bold text-slate-800">{{ $assessment->criteria ?? 'Penilaian #' . $assessment->id }}</div>
-                                    <div class="text-xs text-slate-500 mt-0.5">{{ $assessment->notes ?? '-' }}</div>
+                                <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-shadow">
+                                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                        <div class="flex items-center gap-4">
+                                            <div class="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <div class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-0.5">Penilai / Interviewer</div>
+                                                <div class="text-base font-bold text-slate-800">{{ $assessment->interviewer }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="text-left md:text-right">
+                                            <div class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-0.5">Nilai Skor</div>
+                                            <div class="text-3xl font-black text-indigo-600">{{ number_format($assessment->score, $assessment->score == floor($assessment->score) ? 0 : 2) }}</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-6 pt-6 border-t border-slate-100">
+                                        <div class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2">Catatan Penilaian</div>
+                                        <div class="bg-slate-50 p-4 rounded-xl text-sm text-slate-600 italic leading-relaxed border border-slate-100">
+                                            "{{ $assessment->notes ?: 'Tidak ada catatan khusus yang diberikan.' }}"
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="text-lg font-extrabold text-indigo-600">{{ $assessment->score ?? '-' }}</div>
-                            </div>
                             @endforeach
                         </div>
                     </div>
@@ -98,10 +126,10 @@
                         </svg>
                         Kembali
                     </a>
-                    <a href="{{ route('interviews.edit', $interview->id) }}"
+                    {{-- <a href="{{ route('interviews.edit', $interview->id) }}"
                         class="inline-flex justify-center items-center rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-amber-500/30 hover:bg-amber-600 transition-all transform hover:-translate-y-0.5">
                         Ubah Jadwal
-                    </a>
+                    </a> --}}
                 </div>
             </div>
         </div>

@@ -12,6 +12,23 @@ class Interview extends Model
         'description',
     ];
 
+    protected static function booted(): void
+    {
+        static::created(function (Interview $interview) {
+            $application = $interview->application;
+            if ($application) {
+                $application->selection()->updateOrCreate(
+                    ['application_id' => $application->id],
+                    [
+                        'stage' => 'Wawancara',
+                        'status' => 'wawancara',
+                        'date' => now(),
+                    ]
+                );
+            }
+        });
+    }
+
     /**
      * Get the attributes that should be cast.
      *

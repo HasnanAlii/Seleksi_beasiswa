@@ -23,35 +23,35 @@
                     <div class="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-white opacity-10 rounded-full blur-3xl"></div>
                     <div class="absolute bottom-0 left-0 -mb-10 -ml-10 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
 
-                    <div class="relative z-10">
-                        <div class="flex items-center gap-3 mb-4">
-                            <span class="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full border border-white/30 backdrop-blur-sm">
-                                ID: #{{ $application->id }}
-                            </span>
+                    <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                        <div class="flex-1">
+                            <h3 class="text-3xl font-extrabold tracking-tight">{{ $application->student->name }}</h3>
+                            <p class="text-blue-100 mt-1 font-semibold text-lg">{{ $application->scholarship->scholarship_name }}</p>
+                        </div>
+
+                        <div class="flex flex-col items-end">
                             @if($application->status == 'menunggu')
-                                <span class="inline-flex items-center gap-1.5 bg-amber-400 text-amber-950 text-xs font-bold px-3 py-1 rounded-full shadow-sm">
-                                    <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
-                                    Menunggu
+                                <span class="inline-flex items-center gap-2 bg-white text-amber-600 text-sm font-black px-6 py-3 rounded-2xl shadow-xl shadow-black/10">
+                                    <div class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></div>
+                                    MENUNGGU
                                 </span>
                             @elseif($application->status == 'diproses')
-                                <span class="inline-flex items-center gap-1.5 bg-blue-400 text-blue-950 text-xs font-bold px-3 py-1 rounded-full shadow-sm">
-                                    <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
-                                    Diproses
+                                <span class="inline-flex items-center gap-2 bg-white text-blue-600 text-sm font-black px-6 py-3 rounded-2xl shadow-xl shadow-black/10">
+                                    <div class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                                    DIPROSES
                                 </span>
                             @elseif($application->status == 'diterima')
-                                <span class="inline-flex items-center gap-1.5 bg-emerald-400 text-emerald-950 text-xs font-bold px-3 py-1 rounded-full shadow-sm">
-                                    <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
-                                    Diterima
+                                <span class="inline-flex items-center gap-2 bg-white text-emerald-600 text-sm font-black px-6 py-3 rounded-2xl shadow-xl shadow-black/10">
+                                    <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                                    DITERIMA
                                 </span>
                             @else
-                                <span class="inline-flex items-center gap-1.5 bg-rose-400 text-rose-950 text-xs font-bold px-3 py-1 rounded-full shadow-sm">
-                                    <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
-                                    Ditolak
+                                <span class="inline-flex items-center gap-2 bg-white text-rose-600 text-sm font-black px-6 py-3 rounded-2xl shadow-xl shadow-black/10">
+                                    <div class="w-2 h-2 rounded-full bg-rose-500"></div>
+                                    DITOLAK
                                 </span>
                             @endif
                         </div>
-                        <h3 class="text-3xl font-extrabold">{{ $application->student->name }}</h3>
-                        <p class="text-blue-100 mt-2 font-medium text-lg">{{ $application->scholarship->scholarship_name }}</p>
                     </div>
                 </div>
 
@@ -89,7 +89,16 @@
                                 <div class="text-xs font-semibold text-slate-400 mb-1">Tanggal Mendaftar</div>
                                 <div class="text-base font-bold text-slate-800">{{ $application->created_at->translatedFormat('d F Y H:i') }}</div>
                             </div>
-                            <div class="md:col-span-2">
+                            @if($application->selection)
+                                <div>
+                                    <div class="text-xs font-semibold text-slate-400 mb-1">Tahap Seleksi Saat Ini</div>
+                                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-sm font-bold border border-blue-100">
+                                        {{-- <div class="w-1.5 h-1.5 rounded-full bg-blue-500"></div> --}}
+                                        {{ $application->selection->stage }}
+                                    </div>
+                                </div>
+                            @endif
+                            <div class="{{ $application->selection ? 'md:col-span-1' : 'md:col-span-2' }}">
                                 <div class="text-xs font-semibold text-slate-400 mb-1">Catatan / Deskripsi</div>
                                 <div class="text-base font-medium text-slate-700 bg-slate-50 p-4 rounded-xl border border-slate-100">
                                     {{ $application->description ?: 'Tidak ada catatan.' }}
@@ -97,6 +106,91 @@
                             </div>
                         </div>
                     </div>
+
+                    {{-- Perbandingan Persyaratan --}}
+                    <div>
+                        <h4 class="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 border-b border-slate-100 pb-2">Perbandingan Persyaratan</h4>
+                        <div class="bg-slate-50/50 rounded-2xl border border-slate-100 overflow-hidden">
+                            @php
+                                $studentValues = $application->requirementValues->keyBy('requirement_id');
+                            @endphp
+                            <table class="min-w-full divide-y divide-slate-100">
+                                <thead class="bg-slate-100/50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-[10px] font-black text-slate-500 uppercase tracking-wider">Kriteria</th>
+                                        <th class="px-6 py-3 text-left text-[10px] font-black text-slate-500 uppercase tracking-wider">Standar Beasiswa</th>
+                                        <th class="px-6 py-3 text-left text-[10px] font-black text-slate-500 uppercase tracking-wider">Data Pendaftar</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 bg-transparent">
+                                    @forelse($application->scholarship->requirements as $scholarReq)
+                                        @php
+                                            $val = $studentValues->get($scholarReq->requirement_id);
+                                        @endphp
+                                        <tr>
+                                            <td class="px-6 py-4 text-sm font-bold text-slate-700">
+                                                {{ $scholarReq->requirement->requirement_name }}
+                                            </td>
+                                            <td class="px-6 py-4 text-sm text-slate-500 italic">
+                                                {{ $scholarReq->terms ?: 'Tidak ada standar khusus' }}
+                                            </td>
+                                            <td class="px-6 py-4 text-sm">
+                                                @if($val)
+                                                    <span class="font-black text-blue-600">{{ $val->applicant_value }}</span>
+                                                @else
+                                                    <span class="text-rose-400 text-xs italic">Data belum diisi</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="3" class="px-6 py-8 text-center text-sm text-slate-400 italic">Beasiswa ini tidak memiliki kriteria khusus.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {{-- Hasil Penilaian Wawancara --}}
+                    @if($application->interviews->isNotEmpty())
+                    <div>
+                        <h4 class="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 border-b border-slate-100 pb-2">Hasil Penilaian Wawancara</h4>
+                        <div class="space-y-4">
+                            @foreach($application->interviews as $interview)
+                                <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                                    <div class="flex flex-col md:flex-row justify-between gap-4">
+                                        <div class="space-y-1">
+                                            <div class="text-[10px] font-black uppercase tracking-wider text-slate-400">Jadwal Wawancara</div>
+                                            <div class="text-sm font-bold text-slate-700">{{ $interview->schedule->translatedFormat('l, d F Y - H:i') }} WIB</div>
+                                        </div>
+                                        <div class="flex items-center gap-4">
+                                            @foreach($interview->assessments as $assessment)
+                                                <div class="text-right">
+                                                    <div class="text-[10px] font-black uppercase tracking-wider text-slate-400">Nilai Akhir</div>
+                                                    <div class="text-2xl font-black text-blue-600">{{ number_format($assessment->score, $assessment->score == floor($assessment->score) ? 0 : 2) }}</div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                    
+                                    @foreach($interview->assessments as $assessment)
+                                        <div class="mt-6 pt-6 border-t border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div>
+                                                <div class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Penilai / Interviewer</div>
+                                                <div class="text-sm font-bold text-slate-700">{{ $assessment->interviewer }}</div>
+                                            </div>
+                                            <div>
+                                                <div class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Catatan Penilai</div>
+                                                <div class="text-sm text-slate-600 italic">"{{ $assessment->notes ?: 'Tidak ada catatan khusus.' }}"</div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
 
                 </div>
 

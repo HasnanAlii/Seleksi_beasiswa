@@ -68,7 +68,12 @@ class SelectionController extends Controller
 
     public function show(Selection $selection)
     {
-        $selection->load(['application.student', 'application.scholarship']);
+        $selection->load([
+            'application.student',
+            'application.scholarship.requirements.requirement',
+            'application.requirementValues.requirement',
+            'application.interviews.assessments',
+        ]);
 
         if (request()->wantsJson()) {
             return response()->json(['data' => $selection]);
@@ -129,7 +134,7 @@ class SelectionController extends Controller
         return [
             'application_id' => 'required|integer|exists:applications,id',
             'stage' => 'required|string|max:255',
-            'status' => 'required|string|in:verifikasi,wawancara,diterima,tidak diterima',
+            'status' => 'required|string|in:verifikasi,wawancara,siap di proses,diterima,tidak diterima',
             'notes' => 'nullable|string',
             'date' => 'required|date',
         ];

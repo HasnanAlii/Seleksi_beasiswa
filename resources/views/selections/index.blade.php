@@ -53,10 +53,11 @@
                                         id="filter_status" 
                                         placeholder="Semua Status"
                                         :options="[
-                                            ['id' => 'verifikasi', 'name' => 'Verifikasi'],
-                                            ['id' => 'wawancara', 'name' => 'Wawancara'],
-                                            ['id' => 'diterima', 'name' => 'Diterima'],
-                                            ['id' => 'tidak diterima', 'name' => 'Tidak Diterima'],
+                                             ['id' => 'verifikasi', 'name' => 'Verifikasi'],
+                                             ['id' => 'wawancara', 'name' => 'Wawancara'],
+                                             ['id' => 'siap di proses', 'name' => 'Siap di Proses'],
+                                             ['id' => 'diterima', 'name' => 'Diterima'],
+                                             ['id' => 'tidak diterima', 'name' => 'Tidak Diterima'],
                                         ]"
                                         :value="$filters['status'] ?? ''"
                                         :showFooter="false"
@@ -122,8 +123,18 @@
                                                             </div>
                                                             Wawancara
                                                         </span>
-                                                    @elseif($item->status == 'verifikasi')
-                                                        <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-600 border border-amber-100/50">
+                                                     @elseif($item->status == 'siap di proses')
+                                                         <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-indigo-50 text-indigo-600 border border-indigo-100/50">
+                                                             <div class="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-500 text-white">
+                                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                                                                     <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                                                                     <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd" />
+                                                                 </svg>
+                                                             </div>
+                                                             Siap di Proses
+                                                         </span>
+                                                     @elseif($item->status == 'verifikasi')
+                                                         <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-600 border border-amber-100/50">
                                                             <div class="flex items-center justify-center w-5 h-5 rounded-full bg-amber-500 text-white">
                                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
                                                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />

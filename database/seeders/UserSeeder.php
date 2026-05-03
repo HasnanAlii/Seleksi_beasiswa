@@ -22,18 +22,17 @@ class UserSeeder extends Seeder
             ]
         );
 
-        // Create role if not exists, with display name
-        $role = Role::firstOrCreate(
-            ['name' => 'admin'],
-            ['guard_name' => 'web']
-        );
-        // Optionally set a display name if your Role model supports it
-        if (property_exists($role, 'display_name')) {
-            $role->display_name = 'Administrator';
-            $role->save();
+        // Buat daftar role jika belum ada
+        $roles = ['admin', 'staf', 'kaprodi', 'wakil dekan 3', 'mahasiswa'];
+        foreach ($roles as $roleName) {
+            Role::firstOrCreate(
+                ['name' => $roleName],
+                ['guard_name' => 'web']
+            );
         }
+
         if (! $admin->hasRole('admin')) {
-            $admin->assignRole($role);
+            $admin->assignRole('admin');
         }
     }
 }

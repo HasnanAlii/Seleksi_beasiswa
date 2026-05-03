@@ -26,15 +26,15 @@
                     <div class="absolute bottom-0 left-0 -mb-10 -ml-10 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
                     <div class="relative z-10 flex items-center justify-between">
                         <div>
-                            <span class="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full border border-white/30 backdrop-blur-sm mb-4 inline-block">
+                            {{-- <span class="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full border border-white/30 backdrop-blur-sm mb-4 inline-block">
                                 Penilaian #{{ $assessment->id }}
-                            </span>
+                            </span> --}}
                             <h3 class="text-3xl font-extrabold">{{ $assessment->interview->application->student->name }}</h3>
                             <p class="text-white/80 mt-1 font-medium">{{ $assessment->interview->application->scholarship->scholarship_name }}</p>
-                            <p class="text-white/60 text-sm mt-1">Dinilai oleh: <span class="font-semibold text-white/90">{{ $assessment->interviewer }}</span></p>
+                            {{-- <p class="text-white/60 text-sm mt-1">Dinilai oleh: <span class="font-semibold text-white/90">{{ $assessment->interviewer }}</span></p> --}}
                         </div>
                         <div class="text-right">
-                            <div class="text-6xl font-extrabold">{{ number_format($score, 2) }}</div>
+                            <div class="text-6xl font-extrabold">{{ number_format($score, $score == floor($score) ? 0 : 2) }}</div>
                             <div class="text-white/70 text-sm mt-1">
                                 {{ $score >= 80 ? 'Sangat Baik' : ($score >= 60 ? 'Cukup Baik' : 'Perlu Peningkatan') }}
                             </div>
@@ -84,7 +84,7 @@
                                 <div class="text-xs font-semibold text-slate-400 mb-1">Nilai Akhir</div>
                                 <div class="text-2xl font-extrabold
                                     {{ $score >= 80 ? 'text-emerald-600' : ($score >= 60 ? 'text-amber-600' : 'text-rose-600') }}">
-                                    {{ number_format($score, 2) }}
+                                    {{ number_format($score, $score == floor($score) ? 0 : 2) }}
                                 </div>
                             </div>
                             <div>
@@ -111,10 +111,10 @@
                         </svg>
                         Kembali
                     </a>
-                    <a href="{{ route('interview-assessments.edit', $assessment->id) }}"
+                    {{-- <a href="{{ route('interview-assessments.edit', $assessment->id) }}"
                         class="inline-flex justify-center items-center rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-amber-500/30 hover:bg-amber-600 transition-all transform hover:-translate-y-0.5">
                         Ubah Penilaian
-                    </a>
+                    </a> --}}
                 </div>
 
             </div>

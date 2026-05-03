@@ -13,6 +13,31 @@ class Application extends Model
         'description',
     ];
 
+    protected static function booted(): void
+    {
+        static::saved(function (Application $application) {
+            if ($application->status === 'diproses') {
+                $application->selection()->updateOrCreate(
+                    ['application_id' => $application->id],
+                    [
+                        'stage' => 'Administrasi',
+                        'status' => 'verifikasi',
+                        'date' => now(),
+                    ]
+                );
+            } elseif ($application->status === 'ditolak') {
+                $application->selection()->updateOrCreate(
+                    ['application_id' => $application->id],
+                    [
+                        'stage' => 'Administrasi',
+                        'status' => 'tidak diterima',
+                        'date' => now(),
+                    ]
+                );
+            }
+        });
+    }
+
     public function student()
     {
         return $this->belongsTo(Student::class);

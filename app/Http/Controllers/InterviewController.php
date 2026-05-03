@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Application;
 use App\Models\Interview;
+use App\Models\Scholarship;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class InterviewController extends Controller
@@ -35,31 +37,110 @@ class InterviewController extends Controller
 
     public function create()
     {
-        return view('interviews.form', [
-            'interview' => new Interview,
-            'action' => route('interviews.store'),
-            'method' => 'POST',
-            'submitLabel' => 'Tambah Jadwal',
-            'applications' => Application::with('student', 'scholarship')->latest()->get(),
-        ]);
+        $scholarships = Scholarship::orderBy('scholarship_name')->get();
+
+        return view('interviews.create', compact('scholarships'));
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate($this->rules());
+        $validated = $request->validate([
+            'scholarship_id' => 'nullable|exists:scholarships,id',
+            'date_from' => 'required|date|after_or_equal:today',
+            'date_to' => 'required|date|after_or_equal:date_from',
+            'time_start' => 'required|date_format:H:i',
+            'time_end' => 'required|date_format:H:i|after:time_start',
+            'duration_minutes' => 'required|integer|min:15|max:480',
+        ]);
 
-        $interview = Interview::create($validated);
+        $applicationsQuery = Application::with('student', 'scholarship')
+            ->whereIn('status', ['diproses', 'menunggu'])
+            ->doesntHave('interviews');
+
+        if (! empty($validated['scholarship_id'])) {
+            $applicationsQuery->where('scholarship_id', $validated['scholarship_id']);
+        }
+
+        $applications = $applicationsQuery->get()->shuffle();
+
+        if ($applications->isEmpty()) {
+            $errorMessage = 'Tidak ada pendaftar yang dapat dijadwalkan (sudah terjadwal semua atau tidak ada yang berstatus diproses/menunggu).';
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $errorMessage,
+                ], 422);
+            }
+
+            return back()->withInput()->with('error', $errorMessage);
+        }
+
+        // Generate time slots across the date range
+        $slots = [];
+        $dateFrom = Carbon::parse($validated['date_from']);
+        $dateTo = Carbon::parse($validated['date_to']);
+        $duration = (int) $validated['duration_minutes'];
+
+        for ($date = $dateFrom->copy(); $date->lte($dateTo); $date->addDay()) {
+            $slotStart = Carbon::parse($date->format('Y-m-d').' '.$validated['time_start']);
+            $slotEnd = Carbon::parse($date->format('Y-m-d').' '.$validated['time_end']);
+
+            while ($slotStart->copy()->addMinutes($duration)->lte($slotEnd)) {
+                $currentSlotEnd = $slotStart->copy()->addMinutes($duration);
+
+                // Jam istirahat: 11:30 - 12:30
+                $breakStart = $slotStart->copy()->setTime(11, 30, 0);
+                $breakEnd = $slotStart->copy()->setTime(12, 30, 0);
+
+                // Slot dianggap bersinggungan jika:
+                // Mulai sebelum istirahat selesai DAN Selesai setelah istirahat mulai
+                $isOverlap = $slotStart->lt($breakEnd) && $currentSlotEnd->gt($breakStart);
+
+                if (! $isOverlap) {
+                    $slots[] = $slotStart->copy();
+                }
+
+                $slotStart->addMinutes($duration);
+            }
+        }
+
+        if (empty($slots)) {
+            $errorMessage = 'Rentang waktu tidak cukup untuk menghasilkan slot wawancara. Perbesar rentang tanggal atau kurangi durasi per sesi.';
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $errorMessage,
+                ], 422);
+            }
+
+            return back()->withInput()->with('error', $errorMessage);
+        }
+
+        $scheduledCount = min($applications->count(), count($slots));
+
+        for ($i = 0; $i < $scheduledCount; $i++) {
+            Interview::create([
+                'application_id' => $applications[$i]->id,
+                'schedule' => $slots[$i],
+            ]);
+        }
+
+        $unscheduledCount = $applications->count() - $scheduledCount;
+        $message = "{$scheduledCount} jadwal wawancara berhasil dibuat secara otomatis.";
+
+        if ($unscheduledCount > 0) {
+            $message .= " {$unscheduledCount} pendaftar tidak dapat dijadwalkan karena slot tidak mencukupi.";
+        }
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Jadwal wawancara berhasil disimpan',
-                'data' => $interview->load(['application', 'assessments']),
+                'message' => $message,
                 'redirect' => route('interviews.index'),
-            ], 201);
+            ]);
         }
 
-        return redirect()->route('interviews.index')->with('success', 'Jadwal wawancara berhasil disimpan.');
+        return redirect()->route('interviews.index')->with('success', $message);
     }
 
     public function show(Interview $interview)

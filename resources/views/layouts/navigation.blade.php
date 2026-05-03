@@ -109,17 +109,17 @@
                     {{-- Seleksi --}}
                     <div>
                         <a href="{{ route('selections.index') }}" title="Data Seleksi"
-                            class="relative flex items-center gap-3.5 px-4 py-3.5 text-sm font-extrabold rounded-xl transition-all duration-200 group {{ request()->routeIs('selections.index') ? 'bg-white/10 ring-1 ring-white/20 text-white shadow-lg backdrop-blur-sm' : 'text-white hover:bg-white/5' }}">
-                            @if (request()->routeIs('selections.index'))
+                            class="relative flex items-center gap-3.5 px-4 py-3.5 text-sm font-extrabold rounded-xl transition-all duration-200 group {{ request()->routeIs('selections.*') ? 'bg-white/10 ring-1 ring-white/20 text-white shadow-lg backdrop-blur-sm' : 'text-white hover:bg-white/5' }}">
+                            @if (request()->routeIs('selections.*'))
                                 <div class="absolute left-0 top-1/2 w-[4px] h-6 -translate-y-1/2 bg-[#2ee0a7] shadow-[0_0_8px_rgba(46,224,167,0.8)] rounded-r-md"></div>
                             @endif
-                            <i data-feather="check-square" class="w-5 h-5 {{ request()->routeIs('selections.index') ? 'text-white fill-[#ffffff33]' : 'text-[#87abc9] group-hover:text-white' }}"></i>
+                            <i data-feather="check-square" class="w-5 h-5 {{ request()->routeIs('selections.*') ? 'text-white fill-[#ffffff33]' : 'text-[#87abc9] group-hover:text-white' }}"></i>
                             <span>Seleksi</span>
                         </a>
                     </div>
 
                     {{-- Wawancara --}}
-                    @php $isInterviews = request()->routeIs('interviews.index') || request()->routeIs('interview-assessments.index'); @endphp
+                    @php $isInterviews = request()->routeIs('interviews.*') || request()->routeIs('interview-assessments.*'); @endphp
                     <div x-data="{ open: {{ $isInterviews ? 'true' : 'false' }} }">
                         <button @click="open = !open" title="Menu Wawancara"
                             class="w-full relative flex items-center justify-between px-4 py-3.5 text-sm font-extrabold rounded-xl transition-all duration-200 group {{ $isInterviews ? 'bg-white/10 ring-1 ring-white/20 text-white shadow-lg backdrop-blur-sm' : 'text-white hover:bg-white/5' }}">

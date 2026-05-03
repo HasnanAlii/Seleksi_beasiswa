@@ -29,7 +29,8 @@
                             scholarshipRequirements: @js($scholarshipRequirements ?? []),
                             existingRequirementValues: @js(old('requirement_values', $existingRequirementValues ?? [])),
                         })"
-                        x-init="initialize()">
+                        x-init="initialize()"
+                        @submit="clearDraft()">
                         @csrf
                         @if($method === 'PUT')
                             @method('PUT')
@@ -56,7 +57,7 @@
                                 <div>
                                     <label class="block text-sm font-semibold text-slate-700 mb-2">Nama Lengkap <span class="text-rose-500">*</span></label>
                                     <input type="text" name="new_student_name" required
-                                        value="{{ old('new_student_name') }}"
+                                        x-model="formData.new_student_name"
                                         placeholder="Masukkan nama lengkap"
                                         class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('new_student_name') border-rose-500 @enderror">
                                     @error('new_student_name')
@@ -68,7 +69,7 @@
                                 <div>
                                     <label class="block text-sm font-semibold text-slate-700 mb-2">NPM (Nomor Pokok Mahasiswa) <span class="text-rose-500">*</span></label>
                                     <input type="text" name="new_student_number" required
-                                        value="{{ old('new_student_number') }}"
+                                        x-model="formData.new_student_number"
                                         placeholder="Masukkan nomor pokok mahasiswa"
                                         class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm font-mono focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('new_student_number') border-rose-500 @enderror">
                                     @error('new_student_number')
@@ -81,7 +82,7 @@
                                 <div>
                                     <label class="block text-sm font-semibold text-slate-700 mb-2">Program Studi <span class="text-rose-500">*</span></label>
                                     <input type="text" name="new_student_study_program" required
-                                        value="{{ old('new_student_study_program') }}"
+                                        x-model="formData.new_student_study_program"
                                         placeholder="Masukkan program studi"
                                         class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('new_student_study_program') border-rose-500 @enderror">
                                     @error('new_student_study_program')
@@ -93,7 +94,7 @@
                                 <div>
                                     <label class="block text-sm font-semibold text-slate-700 mb-2">Email <span class="text-slate-400 text-xs font-normal">(opsional, untuk login)</span></label>
                                     <input type="email" name="new_student_email"
-                                        value="{{ old('new_student_email') }}"
+                                        x-model="formData.new_student_email"
                                         placeholder="Masukkan alamat email"
                                         class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('new_student_email') border-rose-500 @enderror">
                                     @error('new_student_email')
@@ -212,6 +213,7 @@
                                     ]"
                                     :value="old('status', $application->status)"
                                     :showFooter="false"
+                                    x-model="formData.status"
                                     compact
                                 />
                                 @error('status')
@@ -223,8 +225,9 @@
                             <div>
                                 <label for="description" class="block text-sm font-semibold text-slate-700 mb-2">Catatan / Deskripsi</label>
                                 <textarea id="description" name="description" rows="4"
+                                    x-model="formData.description"
                                     class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('description') border-rose-500 focus:ring-rose-500/10 @enderror"
-                                    placeholder="Opsional">{{ old('description', $application->description) }}</textarea>
+                                    placeholder="Opsional"></textarea>
                                 @error('description')
                                     <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
                                 @enderror
@@ -252,17 +255,98 @@
 
     <script>
         function applicationRequirementForm({ selectedScholarshipId, scholarshipRequirements, existingRequirementValues }) {
+            const STORAGE_KEY = 'scholarship_application_draft';
+
             return {
                 selectedScholarshipId: selectedScholarshipId || '',
                 scholarshipRequirements: scholarshipRequirements || {},
                 existingRequirementValues: existingRequirementValues || [],
                 valuesByRequirement: {},
+                
+                // Form Fields for Auto-Save
+                formData: {
+                    new_student_name: '',
+                    new_student_number: '',
+                    new_student_study_program: '',
+                    new_student_email: '',
+                    status: 'diproses',
+                    description: ''
+                },
 
                 initialize() {
+                    // 1. Load basic values from PHP (old input or existing record)
+                    this.formData.new_student_name = '{{ old('new_student_name', $application->exists ? $application->student->name : '') }}';
+                    this.formData.new_student_number = '{{ old('new_student_number', $application->exists ? $application->student->student_number : '') }}';
+                    this.formData.new_student_study_program = '{{ old('new_student_study_program', $application->exists ? $application->student->study_program : '') }}';
+                    this.formData.new_student_email = '{{ old('new_student_email', $application->exists ? $application->student->user->email : '') }}';
+                    this.formData.status = '{{ old('status', $application->status ?: 'diproses') }}';
+                    this.formData.description = '{{ str_replace(["\r", "\n"], ['\r', '\n'], old('description', $application->description)) }}';
+
+                    // Load requirement values from PHP
                     this.existingRequirementValues.forEach((item) => {
                         const requirementId = String(item.requirement_id);
                         this.valuesByRequirement[requirementId] = item.applicant_value ?? '';
                     });
+
+                    // 2. Try to restore from LocalStorage (Overrides PHP values if draft exists)
+                    this.restoreFromLocal();
+
+                    // 3. Watch for changes to save automatically
+                    this.$watch('formData', () => this.saveToLocal(), { deep: true });
+                    this.$watch('valuesByRequirement', () => this.saveToLocal(), { deep: true });
+                    this.$watch('selectedScholarshipId', () => this.saveToLocal());
+                },
+
+                saveToLocal() {
+                    // Don't save if it's an edit of an existing record (optional, usually safer)
+                    // if ('{{ $application->exists }}') return; 
+
+                    const dataToSave = {
+                        formData: this.formData,
+                        valuesByRequirement: this.valuesByRequirement,
+                        selectedScholarshipId: this.selectedScholarshipId,
+                        timestamp: new Date().getTime()
+                    };
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+                },
+
+                restoreFromLocal() {
+                    const saved = localStorage.getItem(STORAGE_KEY);
+                    if (saved) {
+                        try {
+                            const data = JSON.parse(saved);
+                            
+                            // Only restore if data is less than 24 hours old
+                            const isFresh = (new Date().getTime() - data.timestamp) < (24 * 60 * 60 * 1000);
+                            
+                            if (isFresh) {
+                                // Overwrite basic form data with draft
+                                Object.keys(data.formData).forEach(key => {
+                                    if (data.formData[key]) {
+                                        this.formData[key] = data.formData[key];
+                                    }
+                                });
+
+                                // Overwrite requirement values with draft
+                                Object.keys(data.valuesByRequirement).forEach(key => {
+                                    if (data.valuesByRequirement[key]) {
+                                        this.valuesByRequirement[key] = data.valuesByRequirement[key];
+                                    }
+                                });
+
+                                // Restore Scholarship if draft has it
+                                if (data.selectedScholarshipId) {
+                                    this.selectedScholarshipId = data.selectedScholarshipId;
+                                }
+                            }
+                        } catch (e) {
+                            console.error('Failed to restore draft', e);
+                        }
+                    }
+                },
+
+                clearDraft() {
+                    localStorage.removeItem(STORAGE_KEY);
                 },
 
                 get selectedRequirements() {
