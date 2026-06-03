@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Student;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -34,6 +35,8 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'student_number' => ['nullable', 'string', 'max:50', 'unique:students,student_number'],
+            'study_program' => ['nullable', 'string', 'max:255'],
         ]);
 
         $user = User::create([
@@ -41,6 +44,17 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
+
+        // Buat data mahasiswa yang terhubung ke akun ini
+        Student::create([
+            'user_id' => $user->id,
+            'name' => $request->name,
+            'student_number' => $request->student_number ?: null,
+            'study_program' => $request->study_program ?: null,
+        ]);
+
+        // Assign role mahasiswa secara otomatis
+        $user->assignRole('mahasiswa');
 
         event(new Registered($user));
 

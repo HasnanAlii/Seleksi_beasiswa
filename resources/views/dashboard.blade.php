@@ -34,15 +34,7 @@
                 <div
                     class="relative px-10 py-12 text-white flex flex-col lg:flex-row justify-between items-center gap-8">
                     <div class="max-w-2xl text-center lg:text-left">
-                        <div
-                            class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-black uppercase tracking-widest mb-4">
-                            <span class="relative flex h-2 w-2">
-                                <span
-                                    class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                                <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-                            </span>
-                            Sistem Aktif
-                        </div>
+                    
                         <h1 class="text-3xl md:text-4xl font-black leading-tight tracking-tight mb-3">
                             Selamat Datang, <span
                                 class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-300">{{ Auth::user()->name }}</span>
@@ -51,7 +43,8 @@
                             Pantau kemajuan seleksi beasiswa dan kelola pendaftar dengan sistem manajemen berbasis data
                             yang cerdas dan efisien.
                         </p>
-                    </div>
+                    </div>    
+                    @hasrole('admin|staf')
                     <div class="flex flex-col sm:flex-row gap-3 shrink-0 w-full lg:w-auto">
                         <a href="{{ route('scholarships.index') }}"
                             class="flex items-center justify-center gap-2 px-6 py-3.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-2xl shadow-lg shadow-blue-600/20 transition-all hover:-translate-y-1">
@@ -74,9 +67,10 @@
                             Daftar Pendaftar
                         </a>
                     </div>
+                    @endhasrole
                 </div>
             </div>
-
+            @hasrole('admin|staf')
             {{-- Stat Cards --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 @php
@@ -193,6 +187,9 @@
                     </a>
                 @endforeach
             </div>
+            @endhasrole
+
+            @hasrole('admin|staf')
 
             {{-- Status Pengajuan & Recent --}}
             <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -379,6 +376,8 @@
                     </div>
                 </div>
             </div>
+            @endhasrole
+
 
             {{-- Wawancara Belum Dinilai --}}
             @if ($pendingInterviews->count() > 0)
@@ -479,6 +478,7 @@
                     </div>
                 </div>
             @endif
+            @hasrole('admin|staf')
 
             {{-- Quick Navigation --}}
             <div class="bg-white rounded-[2.5rem] border border-slate-200/60 shadow-xl shadow-slate-200/40 p-8">
@@ -610,6 +610,7 @@
                     @endforeach
                 </div>
             </div>
+            @endhasrole
 
         </div>
     </div>

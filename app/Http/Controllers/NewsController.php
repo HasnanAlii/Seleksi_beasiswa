@@ -143,4 +143,31 @@ class NewsController extends Controller
 
         return redirect()->route('news.index')->with('success', 'Berita berhasil dihapus.');
     }
+
+    public function publicIndex(Request $request)
+    {
+        $search = $request->get('search', '');
+        
+        $news = News::with('media')
+            ->when($search, function ($q, $search) {
+                return $q->where('title', 'like', "%{$search}%");
+            })
+            ->latest()
+            ->paginate(12)->withQueryString();
+
+        return view('news.public_index', compact('news', 'search'));
+    }
+
+    public function read(News $news)
+    {
+        $news->load('media');
+        
+        // Fetch recent news for sidebar/related
+        $recentNews = News::where('id', '!=', $news->id)
+            ->latest()
+            ->take(5)
+            ->get();
+
+        return view('news.read', compact('news', 'recentNews'));
+    }
 }

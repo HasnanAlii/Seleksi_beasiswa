@@ -12,8 +12,8 @@
         </div>
     </x-slot>
 
-    <div class="py-12 bg-[#f0f6ff] min-h-screen px-10">
-        <div class="mx-auto sm:px-6 lg:px-8">
+    <div class="py-6 md:py-12 bg-[#f0f6ff] min-h-screen px-3 md:px-10">
+        <div class="mx-auto sm:px-4 lg:px-8">
             <div class="space-y-8">
 
                 <div class="bg-white shadow-xl shadow-slate-200/60 rounded-3xl border border-slate-100">
@@ -21,7 +21,7 @@
 
                         {{-- Header Card --}}
                         <div
-                            class="relative z-[250] flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-6">
+                            class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-6">
                             <div>
                                 <h3 class="text-xl font-bold text-slate-800">Daftar Pendaftar Beasiswa</h3>
                                 <p class="text-sm text-slate-500 mt-1">Kelola data mahasiswa yang mendaftar beasiswa.
@@ -43,16 +43,17 @@
                         </div>
 
                         <!-- Filter Bar -->
-                        <div class="mb-8 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 relative z-[100]">
+                        <div class="mb-8 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 relative z-10">
                             <form id="filter-form" method="GET" action="{{ route('applications.index') }}"
-                                class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-4 items-end relative z-[100]">
-                                
+                                class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-4 items-end relative z-10">
+
                                 <!-- Cari Nama/NIM -->
                                 <div class="flex flex-col xl:col-span-4">
                                     <label for="filter_search"
                                         class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">Pencarian</label>
                                     <div class="relative group">
-                                        <input type="text" id="filter_search" name="search" value="{{ $filters['search'] ?? '' }}"
+                                        <input type="text" id="filter_search" name="search"
+                                            value="{{ $filters['search'] ?? '' }}"
                                             placeholder="Cari nama atau NIM mahasiswa..."
                                             class="w-full rounded-xl border border-slate-200 bg-white px-4 py-[7px] pr-10 text-[13px] font-bold focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm min-h-[38px] text-slate-600"
                                             @input.debounce.500ms="$el.closest('form').submit()">
@@ -72,9 +73,9 @@
                                     <label for="filter_scholarship"
                                         class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">Beasiswa</label>
                                     <x-searchable-dropdown name="scholarship_id" id="filter_scholarship"
-                                        placeholder="Semua Beasiswa" 
-                                        :options="$scholarships->map(fn($s) => ['id' => $s->id, 'name' => $s->scholarship_name])->prepend(['id' => '', 'name' => 'Semua'])" 
-                                        :value="$filters['scholarship_id'] ?? ''"
+                                        placeholder="Semua Beasiswa" :options="$scholarships
+                                            ->map(fn($s) => ['id' => $s->id, 'name' => $s->scholarship_name])
+                                            ->prepend(['id' => '', 'name' => 'Semua'])" :value="$filters['scholarship_id'] ?? ''"
                                         :showFooter="false" compact />
                                 </div>
 
@@ -82,17 +83,14 @@
                                 <div class="flex flex-col xl:col-span-2">
                                     <label for="filter_status"
                                         class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">Status</label>
-                                    <x-searchable-dropdown name="status" id="filter_status"
-                                        placeholder="Semua Status" 
+                                    <x-searchable-dropdown name="status" id="filter_status" placeholder="Semua Status"
                                         :options="collect([
                                             ['id' => '', 'name' => 'Semua'],
                                             ['id' => 'menunggu', 'name' => 'Menunggu'],
                                             ['id' => 'diproses', 'name' => 'Diproses'],
                                             ['id' => 'diterima', 'name' => 'Diterima'],
                                             ['id' => 'ditolak', 'name' => 'Ditolak'],
-                                        ])" 
-                                        :value="$filters['status'] ?? ''"
-                                        :showFooter="false" compact />
+                                        ])" :value="$filters['status'] ?? ''" :showFooter="false" compact />
                                 </div>
 
                                 <div class="hidden xl:block xl:col-span-2"></div>
@@ -109,7 +107,7 @@
 
                         {{-- Table --}}
                         <div class="rounded-2xl border border-slate-200 bg-white overflow-visible">
-                            <div class="overflow-visible">
+                            <div class="overflow-x-auto w-full">
                                 <table class="min-w-full divide-y divide-slate-100">
                                     <thead class="bg-slate-50/80">
                                         <tr>
@@ -210,8 +208,20 @@
                                                     @endif
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-center">
-                                                    <div class="relative flex justify-center" x-data="{ open: false }">
-                                                        <button @click="open = !open" @click.outside="open = false"
+                                                    <div class="relative flex justify-center"
+                                                         x-data="{
+                                                            open: false,
+                                                            top: 0, left: 0,
+                                                            toggle(el) {
+                                                                this.open = !this.open;
+                                                                if (this.open) {
+                                                                    const r = el.getBoundingClientRect();
+                                                                    this.top = r.bottom + window.scrollY + 4;
+                                                                    this.left = r.right + window.scrollX - 144;
+                                                                }
+                                                            }
+                                                         }">
+                                                        <button @click="toggle($el)"
                                                             class="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-all">
                                                             <svg width="3" height="15" viewBox="0 0 3 15"
                                                                 fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -221,13 +231,15 @@
                                                             </svg>
                                                         </button>
                                                         <div x-show="open"
+                                                            @click.outside="open = false"
                                                             x-transition:enter="transition ease-out duration-150"
                                                             x-transition:enter-start="opacity-0 scale-95"
                                                             x-transition:enter-end="opacity-100 scale-100"
                                                             x-transition:leave="transition ease-in duration-100"
                                                             x-transition:leave-start="opacity-100 scale-100"
                                                             x-transition:leave-end="opacity-0 scale-95"
-                                                            class="absolute right-0 top-9 z-30 w-36 rounded-xl bg-white shadow-xl border border-slate-100 overflow-hidden origin-top-right"
+                                                            :style="'position:fixed;z-index:9999;width:144px;top:'+top+'px;left:'+left+'px'"
+                                                            class="rounded-xl bg-white shadow-xl border border-slate-100 overflow-hidden origin-top-right"
                                                             style="display:none;">
                                                             <a href="{{ route('applications.show', $item->id) }}"
                                                                 class="w-full block px-4 py-2.5 text-sm text-left font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
@@ -235,7 +247,7 @@
                                                             </a>
                                                             <a href="{{ route('applications.edit', $item->id) }}"
                                                                 class="w-full block px-4 py-2.5 text-sm text-left font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
-                                                                Ubah
+                                                                Validasi
                                                             </a>
                                                             <form
                                                                 action="{{ route('applications.destroy', $item->id) }}"

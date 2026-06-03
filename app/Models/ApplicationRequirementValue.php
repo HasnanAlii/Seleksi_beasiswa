@@ -11,7 +11,19 @@ class ApplicationRequirementValue extends Model
         'requirement_id',
         'term',
         'applicant_value',
+        'document_path',
+        'validation_status',
+        'validation_notes',
+        'validated_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'validation_status' => 'integer',
+            'validated_at' => 'datetime',
+        ];
+    }
 
     public function application()
     {

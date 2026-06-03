@@ -52,7 +52,6 @@
                 <p class="px-2 mb-2 text-xs font-extrabold text-[#74b3ea] uppercase tracking-widest">Manajemen Beasiswa</p>
                 <div class="space-y-1">
 
-                    @hasrole('admin|staf')
                     {{-- Beasiswa dropdown --}}
                     @php $isBeasiswaMenu = request()->routeIs('scholarships.*') || request()->routeIs('requirements.*'); @endphp
                     <div x-data="{ open: {{ $isBeasiswaMenu ? 'true' : 'false' }} }">
@@ -79,15 +78,16 @@
                                     Daftar Beasiswa
                                 </a>
                             </li>
+                            @hasrole('admin|staf')
                             <li>
                                 <a href="{{ route('requirements.index') }}" title="Persyaratan"
-                                    class="block px-3 py-2 text-sm font-extrabold rounded-lg transition-all duration-200 {{ request()->routeIs('requirements.*') ? 'text-white bg-white/10' : 'text-white/80 hover:text-white hover:bg-white/5' }}">
-                                    Persyaratan
-                                </a>
-                            </li>
+                                class="block px-3 py-2 text-sm font-extrabold rounded-lg transition-all duration-200 {{ request()->routeIs('requirements.*') ? 'text-white bg-white/10' : 'text-white/80 hover:text-white hover:bg-white/5' }}">
+                                Persyaratan
+                            </a>
+                        </li>
+                        @endhasrole
                         </ul>
                     </div>
-                    @endhasrole
                 </div>
             </div>
 
@@ -160,12 +160,12 @@
                     @endhasrole
                 </div>
                     @endhasrole
-
-                {{-- INFORMASI --}}
-                {{-- <div class="mt-7">
+                
+                    @hasrole('admin|staf')
+                    {{-- INFORMASI --}}
+                    {{-- <div class="mt-7">
                     <p class="px-2 mb-2 text-xs font-extrabold text-[#74b3ea] uppercase tracking-widest">Informasi</p> --}}
                     <div class="space-y-1">
-
                         {{-- Berita --}}
                         <div>
                             <a href="{{ route('news.index') }}" title="Berita"
@@ -177,7 +177,6 @@
                                 <span>Berita</span>
                             </a>
                         </div>
-
                         {{-- Pengumuman --}}
                         {{-- <div>
                             <a href="{{ route('announcements.index') }}" title="Pengumuman"
@@ -191,6 +190,8 @@
                         </div> --}}
                     </div>
                 {{-- </div> --}}
+                    @endhasrole
+
 
                 @hasrole('admin|staf')
                 {{-- METODE FUZZY --}}
@@ -231,6 +232,89 @@
                     </div>
                 </div>
                 @endhasrole
+                @hasrole('mahasiswa')
+                    @php
+                        $myStudent = \App\Models\Student::where('name', Auth::user()->name)->first();
+                        $myApplication = $myStudent
+                            ? \App\Models\Application::where('student_id', $myStudent->id)->latest()->first()
+                            : null;
+                        $routeApp = request()->route('application');
+                        $routeAppId = $routeApp instanceof \App\Models\Application ? $routeApp->id : (int) $routeApp;
+                        $isStatusActive = request()->routeIs('applications.show') && $myApplication && $routeAppId === $myApplication->id;
+                    @endphp
+                    <div>
+                        @if ($myApplication)
+                            <a href="{{ route('applications.show', $myApplication->id) }}"
+                                title="Status Pendaftaran Beasiswa"
+                                class="relative flex items-center gap-3.5 px-4 py-3.5 text-sm font-extrabold rounded-xl transition-all duration-200 group {{ $isStatusActive ? 'bg-white/10 ring-1 ring-white/20 text-white shadow-lg backdrop-blur-sm' : 'text-white hover:bg-white/5' }}">
+                                @if ($isStatusActive)
+                                    <div class="absolute left-0 top-1/2 w-[4px] h-6 -translate-y-1/2 bg-[#2ee0a7] shadow-[0_0_8px_rgba(46,224,167,0.8)] rounded-r-md"></div>
+                                @endif
+                                <i data-feather="check-square" class="w-5 h-5 flex-shrink-0 {{ $isStatusActive ? 'text-white fill-[#ffffff33]' : 'text-[#87abc9] group-hover:text-white' }}"></i>
+                                <div class="flex flex-col leading-tight min-w-0">
+                                    <span>Status Pendaftaran</span>
+                                    {{-- <span class="text-[10px] font-semibold mt-0.5 truncate
+                                        @if($myApplication->status === 'menunggu') text-amber-300
+                                        @elseif($myApplication->status === 'diproses') text-blue-300
+                                        @elseif($myApplication->status === 'diterima') text-emerald-300
+                                        @else text-rose-300
+                                        @endif">
+                                        {{ strtoupper($myApplication->status) }}
+                                    </span> --}}
+                                </div>
+                            </a>
+                        @else
+                            <div title="Anda belum mendaftar beasiswa"
+                                class="relative flex items-center gap-3.5 px-4 py-3.5 text-sm font-extrabold rounded-xl cursor-not-allowed opacity-60">
+                                <i data-feather="check-square" class="w-5 h-5 flex-shrink-0 text-[#87abc9]"></i>
+                                <div class="flex flex-col leading-tight min-w-0">
+                                    <span class="text-white">Status Pendaftaran</span>
+                                    <span class="text-[10px] font-semibold text-white/50 mt-0.5">Belum mendaftar</span>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+
+                    @php
+                        $myInterview = null;
+                        $myInterviewStudent = Auth::user()->student ?? null;
+                        if ($myInterviewStudent) {
+                            $myInterviewApp = \App\Models\Application::where('student_id', $myInterviewStudent->id)->latest()->first();
+                            if ($myInterviewApp) {
+                                $myInterview = \App\Models\Interview::where('application_id', $myInterviewApp->id)->latest()->first();
+                            }
+                        }
+                        $isInterviewActive = request()->routeIs('interviews.show') && $myInterview && request()->route('interview')?->id === $myInterview->id;
+                    @endphp
+                    <div>
+                        @if ($myInterview)
+                            <a href="{{ route('interviews.show', $myInterview->id) }}"
+                                title="Lihat Jadwal Wawancara"
+                                class="relative flex items-center gap-3.5 px-4 py-3.5 text-sm font-extrabold rounded-xl transition-all duration-200 group {{ $isInterviewActive ? 'bg-white/10 ring-1 ring-white/20 text-white shadow-lg backdrop-blur-sm' : 'text-white hover:bg-white/5' }}">
+                                @if ($isInterviewActive)
+                                    <div class="absolute left-0 top-1/2 w-[4px] h-6 -translate-y-1/2 bg-[#2ee0a7] shadow-[0_0_8px_rgba(46,224,167,0.8)] rounded-r-md"></div>
+                                @endif
+                                <i data-feather="calendar" class="w-5 h-5 flex-shrink-0 {{ $isInterviewActive ? 'text-white fill-[#ffffff33]' : 'text-[#87abc9] group-hover:text-white' }}"></i>
+                                <div class="flex flex-col leading-tight min-w-0">
+                                    <span>Jadwal Wawancara</span>
+                                    <span class="text-[10px] font-semibold text-emerald-300 mt-0.5 truncate">
+                                        {{ \Carbon\Carbon::parse($myInterview->schedule)->translatedFormat('d M Y · H:i') }}
+                                    </span>
+                                </div>
+                            </a>
+                        @else
+                            <div title="Belum memiliki jadwal wawancara"
+                                class="relative flex items-center gap-3.5 px-4 py-3.5 text-sm font-extrabold rounded-xl opacity-50 cursor-default">
+                                <i data-feather="calendar" class="w-5 h-5 flex-shrink-0 text-[#87abc9]"></i>
+                                <div class="flex flex-col leading-tight min-w-0">
+                                    <span class="text-white">Jadwal Wawancara</span>
+                                    <span class="text-[10px] font-medium text-white/50 mt-0.5">Belum ada jadwal</span>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                @endhasrole
+
         </div>
     </div>
 

@@ -66,12 +66,13 @@
                                 </div>
                             </div>
                             
-
+                            @hasrole('admin|staf')
                             <div class="mt-8 pt-6 border-t border-slate-100">
                                 <a href="{{ route('scholarships.edit', $scholarship) }}" class="block w-full py-3 bg-slate-900 text-white text-center rounded-xl text-xs font-bold uppercase tracking-widest shadow-xl shadow-slate-200 hover:bg-blue-600 transition-all duration-300 transform hover:-translate-y-1">
                                     Edit Detail Beasiswa
                                 </a>
                             </div>
+                            @endhasrole
                         </div>
                     </div>
                 </div>
@@ -119,7 +120,9 @@
                     <div class="bg-white shadow-xl shadow-slate-200/60 rounded-3xl overflow-hidden border border-slate-100">
                         <div class="p-6 border-b border-slate-100 flex justify-between items-center">
                             <h4 class="text-sm font-black text-slate-800 uppercase tracking-wider">Persyaratan Dokumen</h4>
+                             @hasrole('admin|staf')
                             <a href="#" class="text-xs font-bold text-blue-600 hover:text-blue-800">Kelola Persyaratan &rarr;</a>
+                             @endhasrole
                         </div>
                         <div class="p-0">
                             @if($scholarship->requirements->count() > 0)

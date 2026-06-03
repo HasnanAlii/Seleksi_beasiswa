@@ -9,8 +9,10 @@ use App\Models\ScholarshipRequirement;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class ApplicationController extends Controller
 {
@@ -51,21 +53,69 @@ class ApplicationController extends Controller
     public function create()
     {
         $scholarshipRequirements = $this->scholarshipRequirementsMap();
+        $isMahasiswa = auth()->user()->hasRole('mahasiswa');
+        $currentStudent = $isMahasiswa ? auth()->user()->student : null;
 
-        return view('applications.form', [
+        return view('applications.register', [
             'application' => new Application,
             'action' => route('applications.store'),
             'method' => 'POST',
-            'submitLabel' => 'Tambah Pendaftaran',
+            'submitLabel' => 'Daftar Beasiswa',
             'students' => Student::orderBy('name')->get(),
             'scholarships' => Scholarship::orderBy('scholarship_name')->get(),
             'scholarshipRequirements' => $scholarshipRequirements,
             'existingRequirementValues' => [],
+            'isMahasiswa' => $isMahasiswa,
+            'currentStudent' => $currentStudent,
         ]);
     }
 
     public function store(Request $request)
     {
+        // === PENDAFTARAN MANDIRI MAHASISWA ===
+        // Jika user yang login adalah mahasiswa, gunakan data student miliknya sendiri
+        if (auth()->user()->hasRole('mahasiswa')) {
+            $student = auth()->user()->student;
+
+            if (! $student) {
+                return back()->withErrors(['student_id' => 'Akun Anda belum terhubung ke data mahasiswa. Hubungi administrator.'])->withInput();
+            }
+
+            $validated = $request->validate([
+                'scholarship_id' => 'required|integer|exists:scholarships,id',
+                'requirement_values' => 'nullable|array',
+                'requirement_values.*.requirement_id' => 'required|integer|exists:requirements,id',
+                'requirement_values.*.term' => 'nullable|string',
+                'requirement_values.*.applicant_value' => 'nullable|string|max:255',
+                'requirement_documents.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:5120',
+            ]);
+
+            $application = DB::transaction(function () use ($request, $validated, $student) {
+                $application = Application::create([
+                    'student_id' => $student->id,
+                    'scholarship_id' => $validated['scholarship_id'],
+                    'status' => 'menunggu',
+                    'description' => $request->description,
+                ]);
+
+                $this->syncRequirementValues($application, $validated['requirement_values'] ?? [], $request->file('requirement_documents') ?? []);
+
+                return $application;
+            });
+
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Pendaftaran berhasil disimpan',
+                    'data' => $application->load(['student', 'scholarship', 'interviews', 'selection']),
+                    'redirect' => route('applications.index'),
+                ], 201);
+            }
+
+            return redirect()->route('applications.index')->with('success', 'Pendaftaran beasiswa berhasil dikirim.');
+        }
+
+        // === PENDAFTARAN OLEH ADMIN/STAF (input manual atau mahasiswa baru) ===
         if ($request->boolean('is_new_student')) {
             $validated = $request->validate([
                 'new_student_name' => 'required|string|max:100',
@@ -79,6 +129,7 @@ class ApplicationController extends Controller
                 'requirement_values.*.requirement_id' => 'required|integer|exists:requirements,id',
                 'requirement_values.*.term' => 'nullable|string',
                 'requirement_values.*.applicant_value' => 'nullable|string|max:255',
+                'requirement_documents.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:5120',
             ]);
 
             $application = DB::transaction(function () use ($request, $validated) {
@@ -109,13 +160,13 @@ class ApplicationController extends Controller
                     'description' => $request->description,
                 ]);
 
-                $this->syncRequirementValues($application, $validated['requirement_values'] ?? []);
+                $this->syncRequirementValues($application, $validated['requirement_values'] ?? [], $request->file('requirement_documents') ?? []);
 
                 return $application;
             });
         } else {
             $validated = $request->validate($this->rules());
-            $application = DB::transaction(function () use ($validated) {
+            $application = DB::transaction(function () use ($request, $validated) {
                 $application = Application::create([
                     'student_id' => $validated['student_id'],
                     'scholarship_id' => $validated['scholarship_id'],
@@ -123,7 +174,7 @@ class ApplicationController extends Controller
                     'description' => $validated['description'] ?? null,
                 ]);
 
-                $this->syncRequirementValues($application, $validated['requirement_values'] ?? []);
+                $this->syncRequirementValues($application, $validated['requirement_values'] ?? [], $request->file('requirement_documents') ?? []);
 
                 return $application;
             });
@@ -164,11 +215,14 @@ class ApplicationController extends Controller
     {
         $scholarshipRequirements = $this->scholarshipRequirementsMap();
         $existingRequirementValues = $application->requirementValues()
-            ->get(['requirement_id', 'term', 'applicant_value'])
+            ->get(['requirement_id', 'term', 'applicant_value', 'document_path', 'validation_status', 'validation_notes'])
             ->map(fn ($item) => [
                 'requirement_id' => $item->requirement_id,
                 'term' => $item->term,
                 'applicant_value' => $item->applicant_value,
+                'document_path' => $item->document_path,
+                'validation_status' => $item->validation_status,
+                'validation_notes' => $item->validation_notes,
             ])
             ->values()
             ->all();
@@ -189,7 +243,7 @@ class ApplicationController extends Controller
     {
         $validated = $request->validate($this->rules());
 
-        DB::transaction(function () use ($application, $validated) {
+        DB::transaction(function () use ($request, $application, $validated) {
             $application->update([
                 'student_id' => $validated['student_id'],
                 'scholarship_id' => $validated['scholarship_id'],
@@ -197,7 +251,12 @@ class ApplicationController extends Controller
                 'description' => $validated['description'] ?? null,
             ]);
 
-            $this->syncRequirementValues($application, $validated['requirement_values'] ?? []);
+            $this->syncRequirementValues(
+                $application,
+                $validated['requirement_values'] ?? [],
+                $request->file('requirement_documents') ?? [],
+                $request->input('requirement_validations') ?? []
+            );
         });
 
         if ($request->wantsJson() || $request->ajax()) {
@@ -241,6 +300,10 @@ class ApplicationController extends Controller
             'requirement_values.*.requirement_id' => 'required|integer|exists:requirements,id',
             'requirement_values.*.term' => 'nullable|string',
             'requirement_values.*.applicant_value' => 'nullable|string|max:255',
+            'requirement_documents.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:5120',
+            'requirement_validations' => 'nullable|array',
+            'requirement_validations.*.status' => 'nullable|integer|in:0,1,2',
+            'requirement_validations.*.notes' => 'nullable|string|max:1000',
         ];
     }
 
@@ -267,19 +330,53 @@ class ApplicationController extends Controller
 
     /**
      * @param  array<int, array<string, mixed>>  $requirementValues
+     * @param  array<string, UploadedFile>  $uploadedDocuments
+     * @param  array<string, array<string, mixed>>  $validationData
      */
-    private function syncRequirementValues(Application $application, array $requirementValues): void
-    {
+    private function syncRequirementValues(
+        Application $application,
+        array $requirementValues,
+        array $uploadedDocuments = [],
+        array $validationData = []
+    ): void {
+        // Hapus file dokumen lama dari storage sebelum di-reset
+        $application->requirementValues()->each(function ($val) {
+            if ($val->document_path) {
+                Storage::disk('public')->delete($val->document_path);
+            }
+        });
         $application->requirementValues()->delete();
 
         $rows = collect($requirementValues)
-            ->filter(fn ($row) => filled($row['applicant_value'] ?? null) || filled($row['term'] ?? null))
-            ->map(function ($row) use ($application) {
+            ->filter(fn ($row) => filled($row['applicant_value'] ?? null) ||
+                filled($row['term'] ?? null) ||
+                isset($uploadedDocuments[$row['requirement_id']]) ||
+                isset($validationData[$row['requirement_id']])
+            )
+            ->map(function ($row) use ($application, $uploadedDocuments, $validationData) {
+                $requirementId = $row['requirement_id'];
+                $documentPath = null;
+
+                if (isset($uploadedDocuments[$requirementId]) && $uploadedDocuments[$requirementId]->isValid()) {
+                    $documentPath = $uploadedDocuments[$requirementId]->store(
+                        'requirement-documents/'.$application->id,
+                        'public'
+                    );
+                }
+
+                $validation = $validationData[$requirementId] ?? null;
+                $validationStatus = isset($validation['status']) ? (int) $validation['status'] : 0;
+                $validationNotes = $validation['notes'] ?? null;
+
                 return [
                     'application_id' => $application->id,
-                    'requirement_id' => $row['requirement_id'],
+                    'requirement_id' => $requirementId,
                     'term' => $row['term'] ?? null,
                     'applicant_value' => $row['applicant_value'] ?? null,
+                    'document_path' => $documentPath,
+                    'validation_status' => $validationStatus,
+                    'validation_notes' => $validationNotes,
+                    'validated_at' => $validationStatus > 0 ? now() : null,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];

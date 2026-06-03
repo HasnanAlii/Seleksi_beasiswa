@@ -40,11 +40,6 @@
                             selectedScholarshipId: '{{ old('scholarship_id', $application->scholarship_id) }}',
                             scholarshipRequirements: @js($scholarshipRequirements ?? []),
                             existingRequirementValues: @js(old('requirement_values', $existingRequirementValues ?? [])),
-                            initialValues: @js(collect($existingRequirementValues ?? [])->mapWithKeys(fn($r) => [(string)$r['requirement_id'] => $r['applicant_value'] ?? ''])->all()),
-                            initialDocuments: @js(collect($existingRequirementValues ?? [])->filter(fn($r) => !empty($r['document_path']))->mapWithKeys(fn($r) => [(string)$r['requirement_id'] => $r['document_path']])->all()),
-                            initialValidationStatuses: @js(collect($existingRequirementValues ?? [])->mapWithKeys(fn($r) => [(string)$r['requirement_id'] => $r['validation_status'] ?? 0])->all()),
-                            initialValidationNotes: @js(collect($existingRequirementValues ?? [])->mapWithKeys(fn($r) => [(string)$r['requirement_id'] => $r['validation_notes'] ?? ''])->all()),
-                            isEdit: {{ $application->exists ? 'true' : 'false' }},
                         })"
                         x-init="initialize()"
                         @submit="clearDraft()">
@@ -56,70 +51,125 @@
                         <div class="space-y-6">
 
                             @if(!$application->exists)
-                            {{-- === INPUT MAHASISWA BARU (selalu tampil saat create) === --}}
-                            <input type="hidden" name="is_new_student" value="1">
-                            <div class="space-y-5 rounded-2xl border border-blue-100 bg-blue-50 p-6 shadow-sm shadow-blue-100/50">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
-                                        <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6z" />
-                                    </svg>
-                                    <h4 class="text-sm font-bold text-slate-700">Data Mahasiswa</h4>
-                                    <span class="ml-auto inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest bg-blue-100 text-blue-700 px-2.5 py-0.5 rounded-full">
-                                        <div class="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                                        Akun login otomatis dibuat
-                                    </span>
-                                </div>
+                                @if($isMahasiswa ?? false)
+                                {{-- === DATA MAHASISWA (TAMPIL OTOMATIS dari akun login) === --}}
+                                @if($currentStudent)
+                                <div class="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 p-6 shadow-sm mb-8">
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                                        <div class="flex items-center gap-3">
+                                            <div class="p-2.5 bg-emerald-100 rounded-xl">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <h4 class="text-sm font-bold text-slate-700">Data Pendaftar</h4>
+                                                <p class="text-[11px] text-emerald-600 font-semibold">Diambil otomatis dari akun Anda</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex">
+                                            <span class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-full border border-emerald-200">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                                </svg>
+                                                Terverifikasi
+                                            </span>
+                                        </div>
+                                    </div>
 
-                                {{-- Nama --}}
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-2">Nama Lengkap <span class="text-rose-500">*</span></label>
-                                    <input type="text" name="new_student_name" required
-                                        x-model="formData.new_student_name"
-                                        placeholder="Masukkan nama lengkap"
-                                        class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('new_student_name') border-rose-500 @enderror">
-                                    @error('new_student_name')
-                                        <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
-                                    @enderror
+                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                                        <div class="rounded-xl bg-white/70 border border-emerald-100 px-5 py-4 shadow-sm">
+                                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Nama Lengkap</p>
+                                            <p class="text-sm font-bold text-slate-800 leading-tight">{{ $currentStudent->name }}</p>
+                                        </div>
+                                        <div class="rounded-xl bg-white/70 border border-emerald-100 px-5 py-4 shadow-sm">
+                                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">NPM</p>
+                                            <p class="text-sm font-bold text-slate-800 font-mono leading-tight">{{ $currentStudent->student_number }}</p>
+                                        </div>
+                                        <div class="rounded-xl bg-white/70 border border-emerald-100 px-5 py-4 shadow-sm">
+                                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Program Studi</p>
+                                            <p class="text-sm font-bold text-slate-800 leading-tight">{{ $currentStudent->study_program }}</p>
+                                        </div>
+                                    </div>
                                 </div>
+                                @else
+                                <div class="rounded-2xl border border-rose-200 bg-rose-50 p-6">
+                                    <div class="flex items-center gap-3">
+                                        <div class="p-2.5 bg-rose-100 rounded-xl">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-rose-500" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-bold text-rose-700">Akun belum terhubung ke data mahasiswa</p>
+                                            <p class="text-xs text-rose-500 mt-0.5">Hubungi administrator untuk menghubungkan akun Anda dengan data mahasiswa.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                @endif
 
-                                {{-- NPM --}}
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-2">NPM (Nomor Pokok Mahasiswa) <span class="text-rose-500">*</span></label>
-                                    <input type="text" name="new_student_number" required
-                                        x-model="formData.new_student_number"
-                                        placeholder="Masukkan nomor pokok mahasiswa"
-                                        class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm font-mono focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('new_student_number') border-rose-500 @enderror">
-                                    @error('new_student_number')
-                                        <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
-                                    @enderror
-                                    <p class="mt-1.5 text-xs text-slate-400">NPM akan digunakan sebagai <strong>username</strong> dan <strong>password</strong> untuk login.</p>
-                                </div>
+                                @else
+                                {{-- === INPUT MAHASISWA BARU (untuk admin/staf) === --}}
+                                <input type="hidden" name="is_new_student" value="1">
+                                <div class="space-y-5 rounded-2xl border border-blue-100 bg-blue-50 p-6 shadow-sm shadow-blue-100/50">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                                            <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6z" />
+                                        </svg>
+                                        <h4 class="text-sm font-bold text-slate-700">Data Mahasiswa Baru</h4>
+                                        <span class="ml-auto inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest bg-blue-100 text-blue-700 px-2.5 py-0.5 rounded-full">
+                                            <div class="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                                            Akun login otomatis dibuat
+                                        </span>
+                                    </div>
 
-                                {{-- Program Studi --}}
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-2">Program Studi <span class="text-rose-500">*</span></label>
-                                    <input type="text" name="new_student_study_program" required
-                                        x-model="formData.new_student_study_program"
-                                        placeholder="Masukkan program studi"
-                                        class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('new_student_study_program') border-rose-500 @enderror">
-                                    @error('new_student_study_program')
-                                        <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
-                                    @enderror
-                                </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-slate-700 mb-2">Nama Lengkap <span class="text-rose-500">*</span></label>
+                                        <input type="text" name="new_student_name" required
+                                            x-model="formData.new_student_name"
+                                            placeholder="Masukkan nama lengkap"
+                                            class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('new_student_name') border-rose-500 @enderror">
+                                        @error('new_student_name')
+                                            <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
+                                        @enderror
+                                    </div>
 
-                                {{-- Email (opsional) --}}
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-2">Email <span class="text-slate-400 text-xs font-normal">(opsional, untuk login)</span></label>
-                                    <input type="email" name="new_student_email"
-                                        x-model="formData.new_student_email"
-                                        placeholder="Masukkan alamat email"
-                                        class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('new_student_email') border-rose-500 @enderror">
-                                    @error('new_student_email')
-                                        <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
-                                    @enderror
-                                    <p class="mt-1.5 text-xs text-slate-400">Jika kosong, email otomatis diisi: <code class="bg-slate-100 px-1 rounded">npm@student.ac.id</code></p>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-slate-700 mb-2">NPM (Nomor Pokok Mahasiswa) <span class="text-rose-500">*</span></label>
+                                        <input type="text" name="new_student_number" required
+                                            x-model="formData.new_student_number"
+                                            placeholder="Masukkan nomor pokok mahasiswa"
+                                            class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm font-mono focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('new_student_number') border-rose-500 @enderror">
+                                        @error('new_student_number')
+                                            <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
+                                        @enderror
+                                        <p class="mt-1.5 text-xs text-slate-400">NPM akan digunakan sebagai <strong>username</strong> dan <strong>password</strong> untuk login.</p>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-semibold text-slate-700 mb-2">Program Studi <span class="text-rose-500">*</span></label>
+                                        <input type="text" name="new_student_study_program" required
+                                            x-model="formData.new_student_study_program"
+                                            placeholder="Masukkan program studi"
+                                            class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('new_student_study_program') border-rose-500 @enderror">
+                                        @error('new_student_study_program')
+                                            <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-semibold text-slate-700 mb-2">Email <span class="text-slate-400 text-xs font-normal">(opsional, untuk login)</span></label>
+                                        <input type="email" name="new_student_email"
+                                            x-model="formData.new_student_email"
+                                            placeholder="Masukkan alamat email"
+                                            class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('new_student_email') border-rose-500 @enderror">
+                                        @error('new_student_email')
+                                            <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
+                                        @enderror
+                                        <p class="mt-1.5 text-xs text-slate-400">Jika kosong, email otomatis diisi: <code class="bg-slate-100 px-1 rounded">npm@student.ac.id</code></p>
+                                    </div>
                                 </div>
-                            </div>
+                                @endif
 
                             @else
                             {{-- === PILIH MAHASISWA (saat edit) === --}}
@@ -215,7 +265,6 @@
                                                         fileName: null,
                                                         fileSize: null,
                                                         isDragging: false,
-                                                        existingDoc: documentsByRequirement[requirement.requirement_id] ?? null,
                                                         handleFile(file) {
                                                             if (!file) return;
                                                             this.fileName = file.name;
@@ -223,27 +272,8 @@
                                                         }
                                                     }"
                                                 >
-                                                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Dokumen</label>
-
-                                                    {{-- Tampilan dokumen lama (read-only, seperti show) --}}
-                                                    <template x-if="existingDoc">
-                                                        <div class="mb-2.5 space-y-1.5">
-                                                            {{-- <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Dokumen saat ini</p> --}}
-                                                            <a :href="`/storage/${existingDoc}`" target="_blank"
-                                                                class="inline-flex items-center gap-2 px-6 py-3.5 rounded-lg bg-blue-50 border border-blue-100 text-blue-700 hover:bg-blue-100 hover:border-blue-200 transition-all font-semibold text-xs group">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                                </svg>
-                                                                <span x-text="existingDoc.split('/').pop()" class="max-w-[150px] truncate"></span>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                                                </svg>
-                                                            </a>
-                                                        </div>
-                                                    </template>
-
-                                                    {{-- Area upload — di-comment sementara (tidak perlu ganti dokumen di edit) --}}
-                                                    {{-- <label
+                                                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Upload Dokumen</label>
+                                                    <label
                                                         :for="`doc_upload_${requirement.requirement_id}`"
                                                         @dragover.prevent="isDragging = true"
                                                         @dragleave.prevent="isDragging = false"
@@ -258,8 +288,8 @@
                                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                                                                     </svg>
                                                                 </div>
-                                                                <p class="text-xs text-slate-400 group-hover:text-blue-500 font-semibold transition-colors" x-text="existingDoc ? 'Klik untuk mengganti dokumen' : 'Klik atau seret file'"></p>
-                                                                <p class="text-[10px] text-slate-300">PDF, JPG, PNG, DOC &mdash; maks 5 MB</p>
+                                                                <p class="text-xs text-slate-400 group-hover:text-blue-500 font-semibold transition-colors">Klik atau seret file</p>
+                                                                <p class="text-[10px] text-slate-300">PDF, JPG, PNG, DOC — maks 5 MB</p>
                                                             </div>
                                                         </template>
                                                         <template x-if="fileName">
@@ -273,7 +303,7 @@
                                                                     <p class="text-xs font-bold text-slate-700 truncate" x-text="fileName"></p>
                                                                     <p class="text-[10px] text-slate-400" x-text="fileSize"></p>
                                                                 </div>
-                                                                <button type="button" @click.prevent="fileName = null; fileSize = null;" class="p-1 hover:bg-rose-50 rounded-lg transition-colors" title="Batal ganti dokumen">
+                                                                <button type="button" @click.prevent="fileName = null; fileSize = null; $refs['doc_' + requirement.requirement_id].value = ''" class="p-1 hover:bg-rose-50 rounded-lg transition-colors">
                                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-slate-400 hover:text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                                                     </svg>
@@ -286,52 +316,11 @@
                                                             :name="`requirement_documents[${requirement.requirement_id}]`"
                                                             accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                                                             class="sr-only"
+                                                            x-ref="'doc_' + requirement.requirement_id"
                                                             @change="handleFile($event.target.files[0])"
                                                         >
-                                                    </label> --}}
+                                                    </label>
                                                 </div>
-
-                                        @hasrole('admin|staf')
-                                        @if($application->exists)
-                                        {{-- Validasi Dokumen/Data --}}
-                                        <div class="mt-4 pt-4 border-t border-slate-100">
-                                            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2.5">Status Validasi</p>
-                                            <div class="flex items-center gap-2 flex-wrap mb-3">
-                                                <button type="button"
-                                                    @click="validationStatusByRequirement[requirement.requirement_id] = 0"
-                                                    :class="(validationStatusByRequirement[requirement.requirement_id] ?? 0) == 0 ? 'bg-slate-100 text-slate-700 ring-1 ring-slate-300' : 'bg-white text-slate-400 border border-slate-200 hover:bg-slate-50'"
-                                                    class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all">
-                                                    Belum Divalidasi
-                                                </button>
-                                                <button type="button"
-                                                    @click="validationStatusByRequirement[requirement.requirement_id] = 1"
-                                                    :class="(validationStatusByRequirement[requirement.requirement_id] ?? 0) == 1 ? 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-400' : 'bg-white text-slate-400 border border-slate-200 hover:bg-emerald-50'"
-                                                    class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all">
-                                                    ✓ Valid
-                                                </button>
-                                                <button type="button"
-                                                    @click="validationStatusByRequirement[requirement.requirement_id] = 2"
-                                                    :class="(validationStatusByRequirement[requirement.requirement_id] ?? 0) == 2 ? 'bg-rose-100 text-rose-700 ring-1 ring-rose-400' : 'bg-white text-slate-400 border border-slate-200 hover:bg-rose-50'"
-                                                    class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all">
-                                                    ✗ Ditolak
-                                                </button>
-                                                <input type="hidden"
-                                                    :name="`requirement_validations[${requirement.requirement_id}][status]`"
-                                                    :value="validationStatusByRequirement[requirement.requirement_id] ?? 0">
-                                            </div>
-                                            <div x-show="(validationStatusByRequirement[requirement.requirement_id] ?? 0) > 0" x-cloak>
-                                                <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5">Catatan Validasi</label>
-                                                <textarea
-                                                    :name="`requirement_validations[${requirement.requirement_id}][notes]`"
-                                                    x-model="validationNotesByRequirement[requirement.requirement_id]"
-                                                    rows="2"
-                                                    placeholder="Tambahkan catatan validasi (opsional)"
-                                                    class="w-full rounded-xl border-slate-200 bg-white px-3 py-2.5 text-xs focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 shadow-sm transition-all resize-none">
-                                                </textarea>
-                                            </div>
-                                        </div>
-                                        @endif
-                                        @endhasrole
                                             </div>
                                         </div>
                                     </template>
@@ -354,7 +343,7 @@
                                     id="status" 
                                     placeholder="Pilih Status"
                                     :options="[
-                                        ['id' => 'diproses', 'name' => 'Diverifikasi'],
+                                        ['id' => 'diproses', 'name' => 'Diproses'],
                                         ['id' => 'ditolak', 'name' => 'Ditolak'],
                                     ]"
                                     :value="old('status', $application->status)"
@@ -401,17 +390,14 @@
     </div>
 
     <script>
-        function applicationRequirementForm({ selectedScholarshipId, scholarshipRequirements, existingRequirementValues, initialValues, initialDocuments, initialValidationStatuses, initialValidationNotes, isEdit }) {
+        function applicationRequirementForm({ selectedScholarshipId, scholarshipRequirements, existingRequirementValues }) {
             const STORAGE_KEY = 'scholarship_application_draft';
 
             return {
                 selectedScholarshipId: selectedScholarshipId || '',
                 scholarshipRequirements: scholarshipRequirements || {},
                 existingRequirementValues: existingRequirementValues || [],
-                valuesByRequirement: initialValues || {},
-                documentsByRequirement: initialDocuments || {},
-                validationStatusByRequirement: initialValidationStatuses || {},
-                validationNotesByRequirement: initialValidationNotes || {},
+                valuesByRequirement: {},
                 
                 // Form Fields for Auto-Save
                 formData: {
@@ -432,13 +418,14 @@
                     this.formData.status = '{{ old('status', $application->status ?: 'diproses') }}';
                     this.formData.description = '{{ str_replace(["\r", "\n"], ['\r', '\n'], old('description', $application->description)) }}';
 
-                    // valuesByRequirement & documentsByRequirement sudah diisi dari initialValues/initialDocuments
-                    // (dipass langsung dari PHP via x-data, tidak perlu loop di sini)
+                    // Load requirement values from PHP
+                    this.existingRequirementValues.forEach((item) => {
+                        const requirementId = String(item.requirement_id);
+                        this.valuesByRequirement[requirementId] = item.applicant_value ?? '';
+                    });
 
-                    // 2. Restore LocalStorage HANYA untuk form CREATE (bukan edit)
-                    if (!isEdit) {
-                        this.restoreFromLocal();
-                    }
+                    // 2. Try to restore from LocalStorage (Overrides PHP values if draft exists)
+                    this.restoreFromLocal();
 
                     // 3. Watch for changes to save automatically
                     this.$watch('formData', () => this.saveToLocal(), { deep: true });

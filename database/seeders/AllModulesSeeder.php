@@ -48,36 +48,36 @@ class AllModulesSeeder extends Seeder
         // ============================================================
         // 3. STUDENTS (Mahasiswa)
         // ============================================================
-        $studentIds = [];
-        $students = [
-            ['name' => 'Andi Firmansyah', 'student_number' => '2021010001', 'study_program' => 'Teknik Informatika'],
-            ['name' => 'Dewi Rahayu', 'student_number' => '2021010002', 'study_program' => 'Sistem Informasi'],
-            ['name' => 'Budi Santoso', 'student_number' => '2022020003', 'study_program' => 'Ilmu Komputer'],
-            ['name' => 'Siti Nurhaliza', 'student_number' => '2022020004', 'study_program' => 'Teknik Elektro'],
-            ['name' => 'Raka Pratama', 'student_number' => '2023030005', 'study_program' => 'Matematika'],
-        ];
-        foreach ($students as $data) {
-            $studentIds[] = DB::table('students')->insertGetId(array_merge($data, [
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]));
-        }
+        // $studentIds = [];
+        // $students = [
+        //     ['name' => 'Andi Firmansyah', 'student_number' => '2021010001', 'study_program' => 'Teknik Informatika'],
+        //     ['name' => 'Dewi Rahayu', 'student_number' => '2021010002', 'study_program' => 'Sistem Informasi'],
+        //     ['name' => 'Budi Santoso', 'student_number' => '2022020003', 'study_program' => 'Ilmu Komputer'],
+        //     ['name' => 'Siti Nurhaliza', 'student_number' => '2022020004', 'study_program' => 'Teknik Elektro'],
+        //     ['name' => 'Raka Pratama', 'student_number' => '2023030005', 'study_program' => 'Matematika'],
+        // ];
+        // foreach ($students as $data) {
+        //     $studentIds[] = DB::table('students')->insertGetId(array_merge($data, [
+        //         'created_at' => now(),
+        //         'updated_at' => now(),
+        //     ]));
+        // }
 
         // ============================================================
         // 4. APPLICATIONS (Pendaftaran)
         // ============================================================
-        $applicationIds = [];
-        $statuses = ['menunggu', 'diproses', 'diterima', 'ditolak', 'menunggu'];
-        for ($i = 0; $i < 5; $i++) {
-            $applicationIds[] = DB::table('applications')->insertGetId([
-                'student_id' => $studentIds[$i],
-                'scholarship_id' => $scholarshipIds[$i],
-                'status' => $statuses[$i],
-                'description' => 'Pendaftaran ke-'.($i + 1).' untuk seleksi beasiswa tahun ajaran 2025/2026.',
-                'created_at' => now()->subDays(rand(1, 30)),
-                'updated_at' => now(),
-            ]);
-        }
+        // $applicationIds = [];
+        // $statuses = ['menunggu', 'diproses', 'diterima', 'ditolak', 'menunggu'];
+        // for ($i = 0; $i < 5; $i++) {
+        //     $applicationIds[] = DB::table('applications')->insertGetId([
+        //         'student_id' => $studentIds[$i],
+        //         'scholarship_id' => $scholarshipIds[$i],
+        //         'status' => $statuses[$i],
+        //         'description' => 'Pendaftaran ke-'.($i + 1).' untuk seleksi beasiswa tahun ajaran 2025/2026.',
+        //         'created_at' => now()->subDays(rand(1, 30)),
+        //         'updated_at' => now(),
+        //     ]);
+        // }
 
         // ============================================================
         // 5. REQUIREMENTS (Scholarship Requirements - pivot)
@@ -96,49 +96,49 @@ class AllModulesSeeder extends Seeder
         // ============================================================
         // 6. SELECTIONS
         // ============================================================
-        $selectionStages = ['Administrasi', 'Akademik', 'Wawancara', 'Final', 'Pengumuman'];
-        $selectionStatuses = ['verifikasi', 'wawancara', 'diterima', 'tidak diterima', 'verifikasi'];
-        foreach ($applicationIds as $i => $applicationId) {
-            DB::table('selection')->insert([
-                'application_id' => $applicationId,
-                'stage' => $selectionStages[$i],
-                'status' => $selectionStatuses[$i],
-                'notes' => 'Catatan seleksi tahap '.$selectionStages[$i].'.',
-                'date' => now()->addDays($i + 7),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
+        // $selectionStages = ['Administrasi', 'Akademik', 'Wawancara', 'Final', 'Pengumuman'];
+        // $selectionStatuses = ['verifikasi', 'wawancara', 'diterima', 'tidak diterima', 'verifikasi'];
+        // foreach ($applicationIds as $i => $applicationId) {
+        //     DB::table('selection')->insert([
+        //         'application_id' => $applicationId,
+        //         'stage' => $selectionStages[$i],
+        //         'status' => $selectionStatuses[$i],
+        //         'notes' => 'Catatan seleksi tahap '.$selectionStages[$i].'.',
+        //         'date' => now()->addDays($i + 7),
+        //         'created_at' => now(),
+        //         'updated_at' => now(),
+        //     ]);
+        // }
 
         // ============================================================
         // 7. INTERVIEWS (Jadwal Wawancara)
         // ============================================================
-        $interviewIds = [];
-        foreach ($applicationIds as $i => $applicationId) {
-            $interviewIds[] = DB::table('interviews')->insertGetId([
-                'application_id' => $applicationId,
-                'schedule' => now()->addDays($i + 14)->setHour(9 + $i)->setMinute(0),
-                'description' => 'Wawancara seleksi beasiswa untuk pendaftar ke-'.($i + 1).'.',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
+        // $interviewIds = [];
+        // foreach ($applicationIds as $i => $applicationId) {
+        //     $interviewIds[] = DB::table('interviews')->insertGetId([
+        //         'application_id' => $applicationId,
+        //         'schedule' => now()->addDays($i + 14)->setHour(9 + $i)->setMinute(0),
+        //         'description' => 'Wawancara seleksi beasiswa untuk pendaftar ke-'.($i + 1).'.',
+        //         'created_at' => now(),
+        //         'updated_at' => now(),
+        //     ]);
+        // }
 
         // ============================================================
         // 8. INTERVIEW ASSESSMENTS (Penilaian Wawancara)
         // ============================================================
-        $interviewers = ['Dr. Ahmad Fauzi', 'Prof. Sari Dewi', 'Ir. Budi Prasetyo', 'Dr. Lestari Utami', 'Prof. Hendra Wijaya'];
-        $scores = [87.50, 92.00, 75.00, 88.50, 95.00];
-        foreach ($interviewIds as $i => $interviewId) {
-            DB::table('interview_assessments')->insert([
-                'interview_id' => $interviewId,
-                'score' => $scores[$i],
-                'notes' => 'Kandidat menunjukkan kemampuan komunikasi yang '.($scores[$i] >= 90 ? 'sangat baik' : 'baik').'.',
-                'interviewer' => $interviewers[$i],
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
+        // $interviewers = ['Dr. Ahmad Fauzi', 'Prof. Sari Dewi', 'Ir. Budi Prasetyo', 'Dr. Lestari Utami', 'Prof. Hendra Wijaya'];
+        // $scores = [87.50, 92.00, 75.00, 88.50, 95.00];
+        // foreach ($interviewIds as $i => $interviewId) {
+        //     DB::table('interview_assessments')->insert([
+        //         'interview_id' => $interviewId,
+        //         'score' => $scores[$i],
+        //         'notes' => 'Kandidat menunjukkan kemampuan komunikasi yang '.($scores[$i] >= 90 ? 'sangat baik' : 'baik').'.',
+        //         'interviewer' => $interviewers[$i],
+        //         'created_at' => now(),
+        //         'updated_at' => now(),
+        //     ]);
+        // }
 
         // ============================================================
         // 9. NEWS (Berita)

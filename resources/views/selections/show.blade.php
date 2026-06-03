@@ -67,7 +67,7 @@
                                 <div class="text-base font-bold text-slate-800">{{ $selection->application->student->name }}</div>
                             </div>
                             <div>
-                                <div class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">NIM / Nomor Mahasiswa</div>
+                                <div class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">NPM / Nomor Mahasiswa</div>
                                 <div class="text-base font-bold text-slate-800">{{ $selection->application->student->student_number }}</div>
                             </div>
                             <div>
@@ -94,6 +94,8 @@
                                         <th class="px-6 py-3 text-left text-[10px] font-black text-slate-500 uppercase tracking-wider">Kriteria</th>
                                         <th class="px-6 py-3 text-left text-[10px] font-black text-slate-500 uppercase tracking-wider">Standar Beasiswa</th>
                                         <th class="px-6 py-3 text-left text-[10px] font-black text-slate-500 uppercase tracking-wider">Data Pendaftar</th>
+                                        <th class="px-6 py-3 text-left text-[10px] font-black text-slate-500 uppercase tracking-wider">Dokumen</th>
+                                        <th class="px-6 py-3 text-left text-[10px] font-black text-slate-500 uppercase tracking-wider">Validasi</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100 bg-transparent">
@@ -101,7 +103,7 @@
                                         @php
                                             $val = $studentValues->get($scholarReq->requirement_id);
                                         @endphp
-                                        <tr>
+                                        <tr class="hover:bg-slate-50/70 transition-colors">
                                             <td class="px-6 py-4 text-sm font-bold text-slate-700">
                                                 {{ $scholarReq->requirement->requirement_name }}
                                             </td>
@@ -109,19 +111,78 @@
                                                 {{ $scholarReq->terms ?: 'Tidak ada standar khusus' }}
                                             </td>
                                             <td class="px-6 py-4 text-sm">
-                                                @if($val)
+                                                @if($val && $val->applicant_value)
                                                     <span class="font-black text-blue-600">{{ $val->applicant_value }}</span>
-                                                    {{-- @if($val->term)
-                                                        <span class="text-[10px] text-slate-400 block mt-0.5">Ket: {{ $val->term }}</span>
-                                                    @endif --}}
                                                 @else
                                                     <span class="text-rose-400 text-xs italic">Data belum diisi</span>
+                                                @endif
+                                            </td>
+                                            {{-- Kolom Dokumen --}}
+                                            <td class="px-6 py-4 text-sm">
+                                                @if($val && $val->document_path)
+                                                    <a href="{{ Storage::url($val->document_path) }}"
+                                                        target="_blank"
+                                                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-100 text-blue-700 hover:bg-blue-100 hover:border-blue-200 transition-all font-semibold text-xs group"
+                                                        title="{{ basename($val->document_path) }}">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                        </svg>
+                                                        <span class="max-w-[120px] truncate">{{ basename($val->document_path) }}</span>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                        </svg>
+                                                    </a>
+                                                @else
+                                                    <span class="text-slate-300 text-xs italic">Tidak ada dokumen</span>
+                                                @endif
+                                            </td>
+                                            {{-- Kolom Validasi --}}
+                                            <td class="px-6 py-4 text-sm">
+                                                @if(!$val)
+                                                    <span class="text-slate-300 text-xs">—</span>
+                                                @elseif($val->validation_status === 1)
+                                                    <div class="space-y-1">
+                                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-black">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                                            </svg>
+                                                            Valid
+                                                        </span>
+                                                        @if($val->validation_notes)
+                                                            <p class="text-[11px] text-slate-500 italic leading-snug max-w-[160px]">{{ $val->validation_notes }}</p>
+                                                        @endif
+                                                        @if($val->validated_at)
+                                                            <p class="text-[10px] text-slate-300">{{ $val->validated_at->translatedFormat('d M Y') }}</p>
+                                                        @endif
+                                                    </div>
+                                                @elseif($val->validation_status === 2)
+                                                    <div class="space-y-1">
+                                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-[11px] font-black">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                                                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                                            </svg>
+                                                            Ditolak
+                                                        </span>
+                                                        @if($val->validation_notes)
+                                                            <p class="text-[11px] text-slate-500 italic leading-snug max-w-[160px]">{{ $val->validation_notes }}</p>
+                                                        @endif
+                                                        @if($val->validated_at)
+                                                            <p class="text-[10px] text-slate-300">{{ $val->validated_at->translatedFormat('d M Y') }}</p>
+                                                        @endif
+                                                    </div>
+                                                @else
+                                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 text-[11px] font-black">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                                                        </svg>
+                                                        Menunggu
+                                                    </span>
                                                 @endif
                                             </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="3" class="px-6 py-8 text-center text-sm text-slate-400 italic">Beasiswa ini tidak memiliki kriteria khusus.</td>
+                                            <td colspan="5" class="px-6 py-8 text-center text-sm text-slate-400 italic">Beasiswa ini tidak memiliki kriteria khusus.</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
@@ -212,10 +273,12 @@
                         </svg>
                         Kembali
                     </a>
+                    @hasanyrole('admin|staf')
                     <a href="{{ route('selections.edit', $selection->id) }}"
                         class="inline-flex justify-center items-center rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-amber-500/30 hover:bg-amber-600 transition-all transform hover:-translate-y-0.5">
                         Ubah Data
                     </a>
+                    @endhasanyrole
                 </div>
 
             </div>

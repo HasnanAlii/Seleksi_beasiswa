@@ -17,11 +17,13 @@ use App\Models\Application;
 use App\Models\Interview;
 use App\Models\Scholarship;
 use App\Models\Student;
+use App\Models\News;
 use Illuminate\Support\Facades\Route;
 
 // --- Rute Halaman Utama ---
 Route::get('/', function () {
-    return view('welcome');
+    $latestNews = News::latest()->take(3)->get();
+    return view('welcome', compact('latestNews'));
 });
 
 // --- Rute Dashboard & Statistik (Auth Only) ---
@@ -59,18 +61,20 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware('auth')->group(function () {
-    
-    // 1. AKSES UMUM (Pengumuman & Berita)
-    Route::get('announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
-    Route::get('announcements/{announcement}', [AnnouncementController::class, 'show'])->name('announcements.show');
+// 1. AKSES UMUM (Pengumuman & Berita)
+Route::get('announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
+Route::get('announcements/{announcement}', [AnnouncementController::class, 'show'])->name('announcements.show');
 
+Route::get('berita', [NewsController::class, 'publicIndex'])->name('news.public_index');
+Route::get('berita/{news}', [NewsController::class, 'read'])->name('news.read');
+
+Route::middleware('auth')->group(function () {
     Route::get('news', [NewsController::class, 'index'])->name('news.index');
     Route::get('news/{news}', [NewsController::class, 'show'])->name('news.show');
 
     // 2. AKSES STAF & ADMIN (Manajemen Konten & Data Master)
     Route::middleware('role:admin|staf')->group(function () {
-        
+
         // --- Manajemen Pengumuman ---
         Route::get('announcements/create', [AnnouncementController::class, 'create'])->name('announcements.create');
         Route::post('announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
@@ -144,7 +148,7 @@ Route::middleware('auth')->group(function () {
         Route::get('fuzzy-memberships/{fuzzyMembership}', [FuzzyMembershipController::class, 'show'])->name('fuzzy-memberships.show');
         Route::put('fuzzy-memberships/{fuzzyMembership}', [FuzzyMembershipController::class, 'update'])->name('fuzzy-memberships.update');
         Route::delete('fuzzy-memberships/{fuzzyMembership}', [FuzzyMembershipController::class, 'destroy'])->name('fuzzy-memberships.destroy');
-      
+
         // --- Manajemen Seleksi (Aksi) ---
         Route::get('selections/create', [SelectionController::class, 'create'])->name('selections.create');
         Route::post('selections', [SelectionController::class, 'store'])->name('selections.store');
@@ -164,6 +168,9 @@ Route::middleware('auth')->group(function () {
 
     // 3. AKSES KHUSUS (Wawancara & Penilaian - Kaprodi & Staf)
     Route::middleware('role:admin|kaprodi|staf')->group(function () {
+        Route::get('scholarships', [ScholarshipController::class, 'index'])->name('scholarships.index');
+        Route::get('scholarships/{scholarship}', [ScholarshipController::class, 'show'])->name('scholarships.show');
+
         Route::get('interviews', [InterviewController::class, 'index'])->name('interviews.index');
 
         Route::get('interview-assessments', [InterviewAssessmentController::class, 'index'])->name('interview-assessments.index');
@@ -176,15 +183,30 @@ Route::middleware('auth')->group(function () {
     });
 
     // 4. AKSES KHUSUS (Hasil Seleksi - Kaprodi, WD3, & Staf)
-    Route::middleware('role:admin|kaprodi|wakil dekan 3|staf')->group(function () {
+    Route::middleware('role:admin|kaprodi|wakil dekan 3|staf|mahasiswa')->group(function () {
+        // beasiswa
+        Route::get('scholarships', [ScholarshipController::class, 'index'])->name('scholarships.index');
+        Route::get('scholarships/{scholarship}', [ScholarshipController::class, 'show'])->name('scholarships.show');
+
         Route::get('selections', [SelectionController::class, 'index'])->name('selections.index');
         Route::get('selections/{selection}', [SelectionController::class, 'show'])->name('selections.show');
     });
 
     // 5. AKSES PENDAFTARAN (Mahasiswa)
     Route::middleware('role:admin|mahasiswa')->group(function () {
-        //sengaja dlu
+        // pendaftaran
+        Route::get('applications', [ApplicationController::class, 'index'])->name('applications.index');
+        Route::get('applications/{application}', [ApplicationController::class, 'show'])->name('applications.show');
+        Route::get('applications/create', [ApplicationController::class, 'create'])->name('applications.create');
+        Route::post('applications', [ApplicationController::class, 'store'])->name('applications.store');
+
+        // wawancara
+        Route::get('interviews/{interview}', [InterviewController::class, 'show'])->name('interviews.show');
+
+        // status pendaftaran
+        //     Route::get('application-statuses', [ApplicationStatusController::class, 'index'])->name('application-statuses.index');
+        //     Route::get('application-statuses/{applicationStatus}', [ApplicationStatusController::class, 'show'])->name('application-statuses.show');
     });
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

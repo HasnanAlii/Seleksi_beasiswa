@@ -9,10 +9,10 @@
     <title>Sistem Seleksi Beasiswa</title>
 
     <!-- Favicon lengkap -->
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/icon/logo.png') }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/icon/logo.png') }}">
-    <link rel="shortcut icon" href="{{ asset('images/icon/logo.png') }}">
-    <link rel="apple-touch-icon" href="{{ asset('images/icon/logo.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/icon/logoft.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/icon/logoft.png') }}">
+    <link rel="shortcut icon" href="{{ asset('images/icon/logoft.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/icon/logoft.png') }}">
 
     {{-- Fonts --}}
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -30,6 +30,10 @@
 
     {{-- Global Styles --}}
     <style>
+        /* html {
+            zoom: 0.8;
+        } */
+
         [x-cloak] {
             display: none !important;
         }
@@ -150,12 +154,26 @@
         </nav>
 
         {{-- SIDEBAR --}}
-        <div class="md:block" :class="showSidebar ? 'block' : 'hidden'">
+        {{-- Mobile: toggle via x-show. Desktop: always visible via CSS --}}
+        <div class="fixed inset-y-0 left-0 z-[200] hidden md:block">
+            @include('layouts.navigation')
+        </div>
+        <div class="fixed inset-y-0 left-0 z-[200] md:hidden"
+             x-show="showSidebar"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="-translate-x-full"
+             x-transition:enter-end="translate-x-0"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="translate-x-0"
+             x-transition:leave-end="-translate-x-full"
+             style="display:none;">
             @include('layouts.navigation')
         </div>
 
         {{-- OVERLAY --}}
-        <div x-show="showSidebar" @click="showSidebar=false" class="fixed inset-0 bg-black/40 md:hidden"></div>
+        <div x-show="showSidebar" @click="showSidebar=false"
+             class="fixed inset-0 bg-black/60 z-[190] md:hidden"
+             style="display:none;"></div>
 
         {{-- HEADER DESKTOP --}}
         @isset($header)

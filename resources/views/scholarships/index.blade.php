@@ -12,8 +12,8 @@
         </div>
     </x-slot>
 
-    <div class="py-12 bg-[#f0f6ff] min-h-screen px-10">
-        <div class="mx-auto sm:px-6 lg:px-8">
+    <div class="py-6 md:py-12 bg-[#f0f6ff] min-h-screen px-3 md:px-10">
+        <div class="mx-auto sm:px-4 lg:px-8">
             <div class="space-y-8">
 
                 <div class="bg-white shadow-xl shadow-slate-200/60 rounded-3xl border border-slate-100">
@@ -21,13 +21,27 @@
 
                         {{-- Header Card --}}
                         <div
-                            class="relative z-[250] flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-6">
+                            class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-6">
                             <div>
                                 <h3 class="text-xl font-bold text-slate-800">Kelola Data Beasiswa</h3>
                                 <p class="text-sm text-slate-500 mt-1">Kelola data terkait beasiswa pada sistem
                                     beasiswa.</p>
                             </div>
                             <div class="flex gap-3">
+                                @hasrole('mahasiswa')
+                                <a href="{{ route('applications.create') }}"
+                                    class="group inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white text-sm font-semibold rounded-2xl shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:shadow-blue-600/40 transition-all duration-300 transform hover:-translate-y-0.5">
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                        class="h-5 w-5 transition-transform group-hover:rotate-90" viewBox="0 0 20 20"
+                                        fill="currentColor">
+                                        <path fill-rule="evenodd"
+                                            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                    Daftar Beasiswa
+                                </a>
+                                @endhasrole
+                                @hasrole('admin|staf')
                                 <a href="{{ route('scholarship-types.index') }}"
                                     class="group inline-flex items-center gap-2 px-6 py-3 bg-white text-slate-700 text-sm font-semibold rounded-2xl shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 hover:text-slate-900 transition-all duration-300 transform hover:-translate-y-0.5">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-500"
@@ -48,13 +62,14 @@
                                     </svg>
                                     Tambah Data
                                 </a>
+                                @endhasrole
                             </div>
                         </div>
 
                         <!-- Filter Bar -->
-                        <div class="mb-8 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 relative z-[100]">
+                        <div class="mb-8 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 relative z-10">
                             <form id="filter-form" method="GET" action="{{ route('scholarships.index') }}"
-                                class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-4 items-end relative z-[100]">
+                                class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-4 items-end relative z-10">
 
                                 <!-- Pencarian -->
                                 <div class="flex flex-col xl:col-span-4">
@@ -122,8 +137,8 @@
                         </div>
 
                         {{-- Table --}}
-                        <div class="rounded-2xl border border-slate-200 bg-white overflow-visible">
-                            <div class="overflow-visible">
+                        <div class="rounded-2xl border border-slate-200 bg-white">
+                            <div class="overflow-x-auto w-full">
                                 <table class="min-w-full divide-y divide-slate-100">
                                     <thead class="bg-slate-50/80">
                                         <tr>
@@ -202,8 +217,9 @@
                                                     @endif
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-center">
-                                                    <div class="relative flex justify-center" x-data="{ open: false }">
-                                                        <button @click="open = !open" @click.outside="open = false"
+                                                    <div class="relative flex justify-center"
+                                                         x-data="{ open:false, top:0, left:0, toggle(el){ this.open=!this.open; if(this.open){ const r=el.getBoundingClientRect(); this.top=r.bottom+window.scrollY+4; this.left=r.right+window.scrollX-144; } } }">
+                                                        <button @click="toggle($el)"
                                                             class="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-all">
                                                             <svg width="3" height="15" viewBox="0 0 3 15"
                                                                 fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -213,32 +229,36 @@
                                                             </svg>
                                                         </button>
                                                         <div x-show="open"
+                                                            @click.outside="open=false"
                                                             x-transition:enter="transition ease-out duration-150"
                                                             x-transition:enter-start="opacity-0 scale-95"
                                                             x-transition:enter-end="opacity-100 scale-100"
                                                             x-transition:leave="transition ease-in duration-100"
                                                             x-transition:leave-start="opacity-100 scale-100"
                                                             x-transition:leave-end="opacity-0 scale-95"
-                                                            class="absolute right-0 top-9 z-30 w-36 rounded-xl bg-white shadow-xl border border-slate-100 overflow-hidden origin-top-right"
+                                                            :style="'position:fixed;z-index:9999;width:144px;top:'+top+'px;left:'+left+'px'"
+                                                            class="rounded-xl bg-white shadow-xl border border-slate-100 overflow-hidden origin-top-right"
                                                             style="display:none;">
                                                             <a href="{{ route('scholarships.show', $item->id) }}"
                                                                 class="w-full block px-4 py-2.5 text-sm text-left font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
                                                                 Detail
                                                             </a>
+                                                            @hasrole('admin|staf')
                                                             <a href="{{ route('scholarships.edit', $item->id) }}"
                                                                 class="w-full block px-4 py-2.5 text-sm text-left font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
                                                                 Ubah
                                                             </a>
                                                             <form
-                                                                action="{{ route('scholarships.destroy', $item->id) }}"
-                                                                method="POST">
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <button type="submit"
-                                                                    class="w-full text-left px-4 py-2.5 text-sm font-semibold text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition-colors">
-                                                                    Hapus
-                                                                </button>
+                                                            action="{{ route('scholarships.destroy', $item->id) }}"
+                                                            method="POST">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit"
+                                                            class="w-full text-left px-4 py-2.5 text-sm font-semibold text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition-colors">
+                                                            Hapus
+                                                            </button>
                                                             </form>
+                                                            @endhasrole
                                                         </div>
                                                     </div>
                                                 </td>
