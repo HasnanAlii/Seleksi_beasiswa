@@ -27,9 +27,9 @@
                 @include('profile.partials.update-password-form')
             </div>
 
-            <div class="bg-white shadow-xl shadow-slate-200/60 rounded-3xl border border-rose-100 p-8 md:p-10">
+            {{-- <div class="bg-white shadow-xl shadow-slate-200/60 rounded-3xl border border-rose-100 p-8 md:p-10">
                 @include('profile.partials.delete-user-form')
-            </div>
+            </div> --}}
         </div>
     </div>
 </x-app-layout>

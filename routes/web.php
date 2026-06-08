@@ -151,6 +151,9 @@ Route::middleware('auth')->group(function () {
         Route::delete('fuzzy-memberships/{fuzzyMembership}', [FuzzyMembershipController::class, 'destroy'])->name('fuzzy-memberships.destroy');
 
         // --- Manajemen Seleksi (Aksi) ---
+        Route::get('selections/export', [SelectionController::class, 'export'])->name('selections.export');
+        Route::post('selections/import-preview', [SelectionController::class, 'importPreview'])->name('selections.import.preview');
+        Route::post('selections/import-apply', [SelectionController::class, 'importApply'])->name('selections.import.apply');
         Route::get('selections/fuzzy-preview', [SelectionController::class, 'previewFuzzy'])->name('selections.fuzzy-preview');
         Route::post('selections/apply-fuzzy', [SelectionController::class, 'applyFuzzy'])->name('selections.apply-fuzzy');
         Route::get('selections/create', [SelectionController::class, 'create'])->name('selections.create');

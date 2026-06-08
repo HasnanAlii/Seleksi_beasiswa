@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\SelectionExport;
 use App\Models\Application;
 use App\Models\Scholarship;
 use App\Models\Selection;
 use App\Services\FuzzySelectionService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SelectionController extends Controller
 {
@@ -138,6 +141,177 @@ class SelectionController extends Controller
         }
 
         return redirect()->route('selections.index')->with('success', 'Data seleksi berhasil dihapus.');
+    }
+
+    /**
+     * Export selection data as Excel or PDF.
+     */
+    public function export(Request $request)
+    {
+        $filters = [
+            'search' => $request->get('search', ''),
+            'status' => $request->get('status', ''),
+            'scholarship_id' => $request->get('scholarship_id', ''),
+            'stage' => $request->get('stage', ''),
+        ];
+
+        $format = $request->get('format', 'excel');
+
+        if ($format === 'pdf') {
+            $data = Selection::query()
+                ->with(['application.student', 'application.scholarship'])
+                ->when($filters['search'], function ($q, $search) {
+                    $q->whereHas('application.student', fn ($qs) => $qs
+                        ->where('name', 'like', "%{$search}%")
+                        ->orWhere('student_number', 'like', "%{$search}%")
+                    );
+                })
+                ->when($filters['status'], fn ($q, $s) => $q->where('status', $s))
+                ->when($filters['scholarship_id'], function ($q, $id) {
+                    $q->whereHas('application', fn ($qa) => $qa->where('scholarship_id', $id));
+                })
+                ->when($filters['stage'], fn ($q, $s) => $q->where('stage', $s))
+                ->latest()
+                ->get();
+
+            $pdf = Pdf::loadView('selections.export-pdf', compact('data', 'filters'))
+                ->setPaper('a4', 'landscape');
+
+            return $pdf->download('laporan-seleksi-'.now()->format('Ymd_His').'.pdf');
+        }
+
+        return Excel::download(
+            new SelectionExport($filters),
+            'laporan-seleksi-'.now()->format('Ymd_His').'.xlsx'
+        );
+    }
+
+    /**
+     * Preview import data from Excel
+     */
+    public function importPreview(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls'
+        ]);
+
+        $file = $request->file('file');
+        
+        try {
+            $rows = Excel::toArray(new \App\Imports\SelectionUpdateImport, $file);
+            $sheet = $rows[0] ?? [];
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal membaca file Excel. Pastikan format file sesuai.');
+        }
+
+        $headerRowIndex = -1;
+        foreach ($sheet as $index => $row) {
+            if (isset($row[0]) && strtolower(trim((string)$row[0])) === 'no') {
+                $headerRowIndex = $index;
+                break;
+            }
+        }
+
+        if ($headerRowIndex === -1) {
+            return back()->with('error', 'Format tabel tidak dikenali. Pastikan ada baris header yang diawali dengan "No".');
+        }
+
+        $headers = array_map(fn($h) => strtolower(trim((string)$h)), $sheet[$headerRowIndex]);
+        $npmIndex = array_search('npm', $headers);
+        $beasiswaIndex = array_search('beasiswa', $headers);
+        $statusIndex = array_search('status', $headers);
+        $tahapIndex = array_search('tahap', $headers);
+
+        if ($npmIndex === false || $beasiswaIndex === false || $statusIndex === false) {
+            return back()->with('error', 'Kolom wajib (NPM, Beasiswa, Status) tidak ditemukan di file Excel.');
+        }
+
+        $previewData = [];
+        
+        for ($i = $headerRowIndex + 1; $i < count($sheet); $i++) {
+            $row = $sheet[$i];
+            if (empty(trim((string)($row[0] ?? '')))) continue; 
+            
+            $npm = trim((string)($row[$npmIndex] ?? ''));
+            $beasiswa = trim((string)($row[$beasiswaIndex] ?? ''));
+            $statusExcel = strtolower(trim((string)($row[$statusIndex] ?? '')));
+            $tahapExcel = $tahapIndex !== false ? trim((string)($row[$tahapIndex] ?? '')) : null;
+
+            if (!$npm || !$beasiswa || !$statusExcel) continue;
+
+            $selection = Selection::with(['application.student', 'application.scholarship'])
+                ->whereHas('application.student', fn($q) => $q->where('student_number', $npm))
+                ->whereHas('application.scholarship', fn($q) => $q->where('scholarship_name', $beasiswa))
+                ->first();
+
+            if ($selection) {
+                // Jika status diterima, tahap otomatis menjadi "Divalidasi Universitas"
+                if ($statusExcel === 'diterima') {
+                    $tahapExcel = 'Divalidasi Universitas';
+                }
+
+                $statusChanged = strtolower($selection->status) !== $statusExcel;
+                $tahapChanged = $tahapExcel && strtolower($selection->stage) !== strtolower($tahapExcel);
+                $changed = $statusChanged || $tahapChanged;
+                $previewData[] = [
+                    'selection_id' => $selection->id,
+                    'application_id' => $selection->application_id,
+                    'npm' => $npm,
+                    'student_name' => $selection->application->student->name,
+                    'scholarship_name' => $beasiswa,
+                    'old_status' => $selection->status,
+                    'new_status' => $statusExcel,
+                    'old_stage' => $selection->stage,
+                    'new_stage' => $tahapExcel ?? $selection->stage,
+                    'changed' => $changed
+                ];
+            }
+        }
+
+        $cacheKey = 'import_selection_' . auth()->id();
+        cache()->put($cacheKey, collect($previewData)->where('changed', true)->toArray(), now()->addHour());
+
+        return view('selections.import-preview', [
+            'previewData' => collect($previewData),
+            'cacheKey' => $cacheKey
+        ]);
+    }
+
+    /**
+     * Apply import updates
+     */
+    public function importApply(Request $request)
+    {
+        $cacheKey = $request->input('cache_key');
+        $updates = cache()->get($cacheKey);
+
+        if (!$updates) {
+            return redirect()->route('selections.index')->with('error', 'Sesi import telah kedaluwarsa atau tidak valid. Silakan upload ulang file.');
+        }
+
+        $count = 0;
+        foreach ($updates as $data) {
+            $selection = Selection::find($data['selection_id']);
+            if ($selection) {
+                $updatePayload = ['status' => $data['new_status']];
+                if (!empty($data['new_stage'])) {
+                    $updatePayload['stage'] = $data['new_stage'];
+                }
+                $selection->update($updatePayload);
+
+                $appStatus = $data['new_status'];
+                if ($appStatus === 'tidak diterima') {
+                    $appStatus = 'ditolak';
+                }
+
+                $selection->application()->update(['status' => $appStatus]);
+                $count++;
+            }
+        }
+
+        cache()->forget($cacheKey);
+
+        return redirect()->route('selections.index')->with('success', "Berhasil menerapkan update status pada {$count} data kelayakan.");
     }
 
     /**
