@@ -131,11 +131,11 @@
                                                                 class="w-full block px-4 py-2.5 text-sm text-left font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
                                                                 Ubah
                                                             </a>
-                                                            <form action="{{ route('scholarship-types.destroy', $item->id) }}" method="POST">
+                                                            <form action="{{ route('scholarship-types.destroy', $item->id) }}" method="POST"
+                                                                data-confirm-message="Hapus jenis beasiswa ini? Tindakan ini tidak dapat dibatalkan.">
                                                                 @csrf
                                                                 @method('DELETE')
                                                                 <button type="submit"
-                                                                    onclick="return confirm('Hapus jenis beasiswa ini?')"
                                                                     class="w-full text-left px-4 py-2.5 text-sm font-semibold text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition-colors">
                                                                     Hapus
                                                                 </button>

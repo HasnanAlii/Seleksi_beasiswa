@@ -201,11 +201,11 @@
                                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 {{-- Nilai Data Pendaftar --}}
                                                 <div>
-                                                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Nilai Data Pendaftar</label>
+                                                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2"> Data Pendaftar</label>
                                                     <input type="text"
                                                         :name="`requirement_values[${index}][applicant_value]`"
                                                         x-model="valuesByRequirement[requirement.requirement_id]"
-                                                        placeholder="Masukkan nilai / data pendaftar"
+                                                        placeholder="Masukkan data pendaftar"
                                                         class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all">
                                                 </div>
 
@@ -357,7 +357,7 @@
                                         ['id' => 'diproses', 'name' => 'Diverifikasi'],
                                         ['id' => 'ditolak', 'name' => 'Ditolak'],
                                     ]"
-                                    :value="old('status', $application->status)"
+                                    :value="old('status', in_array($application->status, ['diproses','ditolak']) ? $application->status : 'diproses')"
                                     :showFooter="false"
                                     x-model="formData.status"
                                     compact
@@ -428,8 +428,8 @@
                     this.formData.new_student_name = '{{ old('new_student_name', $application->exists ? $application->student->name : '') }}';
                     this.formData.new_student_number = '{{ old('new_student_number', $application->exists ? $application->student->student_number : '') }}';
                     this.formData.new_student_study_program = '{{ old('new_student_study_program', $application->exists ? $application->student->study_program : '') }}';
-                    this.formData.new_student_email = '{{ old('new_student_email', $application->exists ? $application->student->user->email : '') }}';
-                    this.formData.status = '{{ old('status', $application->status ?: 'diproses') }}';
+                    this.formData.new_student_email = '{{ old('new_student_email', $application->exists ? $application->student?->user?->email : '') }}';
+                    this.formData.status = '{{ old('status', in_array($application->status, ['diproses','ditolak']) ? $application->status : 'diproses') }}';
                     this.formData.description = '{{ str_replace(["\r", "\n"], ['\r', '\n'], old('description', $application->description)) }}';
 
                     // valuesByRequirement & documentsByRequirement sudah diisi dari initialValues/initialDocuments

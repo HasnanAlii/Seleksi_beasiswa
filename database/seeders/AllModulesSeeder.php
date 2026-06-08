@@ -14,11 +14,18 @@ class AllModulesSeeder extends Seeder
         // ============================================================
         $scholarshipIds = [];
         $scholarships = [
-            ['scholarship_name' => 'Beasiswa Unggulan Kemendikbud', 'scholarship_type' => 'Prestasi', 'quota' => 50, 'validity_period' => '2025-12-31'],
-            ['scholarship_name' => 'Beasiswa KIP Kuliah', 'scholarship_type' => 'Ekonomi', 'quota' => 100, 'validity_period' => '2025-06-30'],
-            ['scholarship_name' => 'Beasiswa LPDP S1', 'scholarship_type' => 'Riset', 'quota' => 30, 'validity_period' => '2026-03-31'],
-            ['scholarship_name' => 'Beasiswa Daerah Istimewa Yogyakarta', 'scholarship_type' => 'Daerah', 'quota' => 20, 'validity_period' => '2025-09-30'],
-            ['scholarship_name' => 'Beasiswa Yayasan Bakti Nusantara', 'scholarship_type' => 'Swasta', 'quota' => 15, 'validity_period' => '2026-01-31'],
+            [
+                'scholarship_name' => 'KIP Kuliah',
+                'scholarship_type' => 'Ekonomi',
+                'quota' => 100,
+                'validity_period' => '2026-12-31',
+            ],
+            [
+                'scholarship_name' => 'Beasiswa PEMDA',
+                'scholarship_type' => 'Prestasi',
+                'quota' => 50,
+                'validity_period' => '2026-12-31',
+            ],
         ];
         foreach ($scholarships as $data) {
             $scholarshipIds[] = DB::table('scholarships')->insertGetId(array_merge($data, [
@@ -32,11 +39,10 @@ class AllModulesSeeder extends Seeder
         // ============================================================
         $requirementIds = [];
         $requirements = [
-            ['requirement_name' => 'Transkrip Nilai'],
-            ['requirement_name' => 'Surat Rekomendasi'],
-            ['requirement_name' => 'KTP / Kartu Mahasiswa'],
-            ['requirement_name' => 'Surat Keterangan Tidak Mampu'],
-            ['requirement_name' => 'Esai Motivasi'],
+            ['requirement_name' => 'Penghasilan Orang Tua'],
+            ['requirement_name' => 'Status DTKS'],
+            ['requirement_name' => 'Jumlah Tanggungan Orang Tua'],
+            ['requirement_name' => 'Prestasi Akademik'],
         ];
         foreach ($requirements as $data) {
             $requirementIds[] = DB::table('requirements')->insertGetId(array_merge($data, [
@@ -81,16 +87,36 @@ class AllModulesSeeder extends Seeder
 
         // ============================================================
         // 5. REQUIREMENTS (Scholarship Requirements - pivot)
+        // Setiap beasiswa mendapat SEMUA persyaratan dengan ketentuan spesifik
         // ============================================================
-        $srStatuses = ['menunggu', 'diverifikasi', 'ditolak', 'diverifikasi', 'menunggu'];
-        foreach ($scholarshipIds as $i => $scholarshipId) {
-            DB::table('scholarship_requirements')->insert([
-                'scholarship_id' => $scholarshipId,
-                'requirement_id' => $requirementIds[$i],
-                'terms' => 'Ketentuan khusus untuk persyaratan ini.',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+        $requirementTerms = [
+
+            // Hasil Wawancara
+
+            // Penghasilan Orang Tua
+            $requirementIds[0] => 'Penghasilan orang tua/wali tidak melebihi Rp 5.000.000 per bulan yang dibuktikan dengan surat keterangan penghasilan.',
+
+            // Status DTKS
+            $requirementIds[1] => 'Terdaftar dalam Data Terpadu Kesejahteraan Sosial (DTKS) yang dibuktikan dengan dokumen pendukung yang sah.',
+
+            // Jumlah Tanggungan Orang Tua
+            $requirementIds[2] => 'Memiliki minimal 2 anggota keluarga yang menjadi tanggungan orang tua/wali.',
+
+            // Prestasi Akademik
+            $requirementIds[3] => 'Memiliki minimal 1 prestasi akademik/non-akademik atau menunjukkan capaian akademik yang baik selama masa studi.',
+
+        ];
+
+        foreach ($scholarshipIds as $scholarshipId) {
+            foreach ($requirementIds as $requirementId) {
+                DB::table('scholarship_requirements')->insert([
+                    'scholarship_id' => $scholarshipId,
+                    'requirement_id' => $requirementId,
+                    'terms' => $requirementTerms[$requirementId],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
         }
 
         // ============================================================
@@ -172,7 +198,7 @@ class AllModulesSeeder extends Seeder
         foreach ($scholarshipIds as $i => $scholarshipId) {
             DB::table('announcements')->insert([
                 'scholarship_id' => $scholarshipId,
-                'title' => 'Pengumuman Resmi Beasiswa '.$scholarships[$i]['scholarship_name'],
+                'title' => 'Pengumuman Resmi Beasiswa ' . $scholarships[$i]['scholarship_name'],
                 'date' => now()->addDays($i + 30)->toDateString(),
                 'publish_status' => $i % 2 === 0 ? true : false,
                 'created_at' => now(),
@@ -184,34 +210,91 @@ class AllModulesSeeder extends Seeder
         // 11. FUZZY CRITERIA
         // ============================================================
         $fuzzyCriterias = [
-            ['criteria_name' => 'IPK'],
+            ['criteria_name' => 'Hasil Wawancara'],
             ['criteria_name' => 'Penghasilan Orang Tua'],
+            ['criteria_name' => 'Status DTKS'],
+            ['criteria_name' => 'Jumlah Tanggungan Orang Tua'],
             ['criteria_name' => 'Prestasi Akademik'],
-            ['criteria_name' => 'Keaktifan Organisasi'],
-            ['criteria_name' => 'Jarak Tempat Tinggal'],
         ];
+
         $fuzzyCriteriaIds = [];
+
         foreach ($fuzzyCriterias as $data) {
-            $fuzzyCriteriaIds[] = DB::table('fuzzy_criteria')->insertGetId(array_merge($data, [
+            $fuzzyCriteriaIds[] = DB::table('fuzzy_criteria')->insertGetId([
+                'criteria_name' => $data['criteria_name'],
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]));
+            ]);
         }
 
         // ============================================================
         // 12. FUZZY MEMBERSHIPS
         // ============================================================
 
-        $minValues = [0, 2.0, 3.0, 0, 1000000];
-        $midValues = [1.5, 2.75, 3.5, 50, 3000000];
-        $maxValues = [2.0, 3.0, 4.0, 100, 5000000];
-        foreach ($fuzzyCriteriaIds as $i => $criteriaId) {
+        $membershipData = [
+
+            // Hasil Wawancara (0 - 100)
+            [
+                'criteria_id' => $fuzzyCriteriaIds[0],
+                'min_value' => 0,
+                'mid_value' => 75,
+                'max_value' => 100,
+            ],
+
+            // Penghasilan Orang Tua (Rp/Bulan)
+            [
+                'criteria_id' => $fuzzyCriteriaIds[1],
+                'min_value' => 0,
+                'mid_value' => 2000000,
+                'max_value' => 5000000,
+            ],
+
+            // Status DTKS (1=kurang, 2=terdaftar/peak, 3=sangat terdaftar)
+            // Nilai 0 (tidak terdaftar) dipetakan ke 3 oleh FuzzySelectionService
+            [
+                'criteria_id' => $fuzzyCriteriaIds[2],
+                'min_value' => 1,
+                'mid_value' => 2,
+                'max_value' => 3,
+            ],
+
+            // Jumlah Tanggungan Orang Tua
+            [
+                'criteria_id' => $fuzzyCriteriaIds[3],
+                'min_value' => 1,
+                'mid_value' => 3,
+                'max_value' => 5,
+            ],
+
+            // Prestasi Akademik (Jumlah Prestasi)
+            [
+                'criteria_id' => $fuzzyCriteriaIds[4],
+                'min_value' => 0,
+                'mid_value' => 2,
+                'max_value' => 5,
+            ],
+        ];
+
+        foreach ($membershipData as $membership) {
+
+            // KIP Kuliah
             DB::table('fuzzy_memberships')->insert([
-                'scholarship_id' => $scholarshipIds[$i % count($scholarshipIds)],
-                'criteria_id' => $criteriaId,
-                'min_value' => $minValues[$i],
-                'mid_value' => $midValues[$i],
-                'max_value' => $maxValues[$i],
+                'scholarship_id' => $scholarshipIds[0],
+                'criteria_id' => $membership['criteria_id'],
+                'min_value' => $membership['min_value'],
+                'mid_value' => $membership['mid_value'],
+                'max_value' => $membership['max_value'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            // PEMDA
+            DB::table('fuzzy_memberships')->insert([
+                'scholarship_id' => $scholarshipIds[1],
+                'criteria_id' => $membership['criteria_id'],
+                'min_value' => $membership['min_value'],
+                'mid_value' => $membership['mid_value'],
+                'max_value' => $membership['max_value'],
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

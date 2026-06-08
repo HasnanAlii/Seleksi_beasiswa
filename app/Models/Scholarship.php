@@ -39,4 +39,9 @@ class Scholarship extends Model
     {
         return $this->hasMany(ScholarshipRequirement::class);
     }
+
+    public function fuzzyMemberships()
+    {
+        return $this->hasMany(FuzzyMembership::class);
+    }
 }

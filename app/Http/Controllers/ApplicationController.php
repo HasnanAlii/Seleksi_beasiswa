@@ -6,6 +6,7 @@ use App\Models\Application;
 use App\Models\ApplicationRequirementValue;
 use App\Models\Scholarship;
 use App\Models\ScholarshipRequirement;
+use App\Models\Selection;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -100,6 +101,15 @@ class ApplicationController extends Controller
 
                 $this->syncRequirementValues($application, $validated['requirement_values'] ?? [], $request->file('requirement_documents') ?? []);
 
+                // Otomatis buat data seleksi dengan status awal 'belum diverifikasi'
+                Selection::create([
+                    'application_id' => $application->id,
+                    'stage' => 'Administrasi',
+                    'status' => 'belum diverifikasi',
+                    'notes' => null,
+                    'date' => now(),
+                ]);
+
                 return $application;
             });
 
@@ -156,11 +166,20 @@ class ApplicationController extends Controller
                 $application = Application::create([
                     'student_id' => $student->id,
                     'scholarship_id' => $request->scholarship_id,
-                    'status' => $request->status,
+                    'status' => 'menunggu',
                     'description' => $request->description,
                 ]);
 
                 $this->syncRequirementValues($application, $validated['requirement_values'] ?? [], $request->file('requirement_documents') ?? []);
+
+                // Otomatis buat data seleksi dengan status awal 'belum diverifikasi'
+                Selection::create([
+                    'application_id' => $application->id,
+                    'stage' => 'Administrasi',
+                    'status' => 'belum diverifikasi',
+                    'notes' => null,
+                    'date' => now(),
+                ]);
 
                 return $application;
             });

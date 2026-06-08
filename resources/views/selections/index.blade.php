@@ -23,13 +23,19 @@
                                 <p class="text-sm text-slate-500 mt-1">Kelola proses seleksi pendaftar beasiswa.</p>
                             </div>
                             @hasrole('admin|staf')
-                            <a href="{{ route('selections.create') }}"
+                            <a href="{{ route('selections.fuzzy-preview') }}"
+                                class="group inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-blue-600 text-white text-sm font-semibold rounded-2xl shadow-lg shadow-violet-500/30 hover:from-violet-700 hover:to-blue-700 hover:shadow-violet-600/40 transition-all duration-300 transform hover:-translate-y-0.5">
+                                {{-- AI Sparkle Star Icon --}}
+                                <span class="text-xl"> ✦</span>
+                                Seleksi dengan AI
+                            </a>
+                            {{-- <a href="{{ route('selections.create') }}"
                                 class="group inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white text-sm font-semibold rounded-2xl shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:shadow-blue-600/40 transition-all duration-300 transform hover:-translate-y-0.5">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform group-hover:rotate-90" viewBox="0 0 20 20" fill="currentColor">
                                     <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
                                 </svg>
                                 Tambah Seleksi
-                            </a>
+                            </a> --}}
                             @endhasrole
                         </div>
 
@@ -89,9 +95,11 @@
                                         placeholder="Semua Status"
                                         :options="collect([
                                              ['id' => '', 'name' => 'Semua Status'],
-                                             ['id' => 'verifikasi', 'name' => 'Verifikasi'],
+                                             ['id' => 'belum diverifikasi', 'name' => 'Belum Diverifikasi'],
+                                             ['id' => 'verifikasi', 'name' => 'Diverifikasi'],
                                              ['id' => 'wawancara', 'name' => 'Wawancara'],
                                              ['id' => 'siap di proses', 'name' => 'Siap di Proses'],
+                                             ['id' => 'layak', 'name' => 'Layak'],
                                              ['id' => 'diterima', 'name' => 'Diterima'],
                                              ['id' => 'tidak diterima', 'name' => 'Tidak Diterima'],
                                         ])"
@@ -142,7 +150,25 @@
                                                     {{ $item->stage }}
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-center">
-                                                    @if($item->status == 'diterima')
+                                                    @if($item->status == 'belum diverifikasi')
+                                                        <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-500 border border-slate-200">
+                                                            <div class="flex items-center justify-center w-5 h-5 rounded-full bg-slate-400 text-white">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                                                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                                                </svg>
+                                                            </div>
+                                                            Belum Diverifikasi
+                                                        </span>
+                                                    @elseif($item->status == 'layak')
+                                                        <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-violet-50 text-violet-700 border border-violet-100/50">
+                                                            <div class="flex items-center justify-center w-5 h-5 rounded-full bg-gradient-to-br from-violet-500 to-blue-500 text-white">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                                                </svg>
+                                                            </div>
+                                                            Layak
+                                                        </span>
+                                                    @elseif($item->status == 'diterima')
                                                         <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-100/50">
                                                             <div class="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500 text-white">
                                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
@@ -177,9 +203,9 @@
                                                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
                                                                 </svg>
                                                             </div>
-                                                            Verifikasi
+                                                            Diverifikasi
                                                         </span>
-                                                    @else
+                                                     @elseif($item->status == 'tidak diterima')
                                                         <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-rose-50 text-rose-600 border border-rose-100/50">
                                                             <div class="flex items-center justify-center w-5 h-5 rounded-full bg-rose-500 text-white">
                                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
@@ -187,6 +213,10 @@
                                                                 </svg>
                                                             </div>
                                                             Tidak Diterima
+                                                        </span>
+                                                    @else
+                                                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-500 border border-slate-200">
+                                                            {{ $item->status }}
                                                         </span>
                                                     @endif
                                                 </td>
@@ -218,10 +248,11 @@
                                                             @hasrole('admin|staf')
                                                             <a href="{{ route('selections.edit', $item->id) }}"
                                                                 class="w-full block px-4 py-2.5 text-sm text-left font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">Ubah</a>
-                                                            <form action="{{ route('selections.destroy', $item->id) }}" method="POST">
+                                                            <form action="{{ route('selections.destroy', $item->id) }}" method="POST"
+                                                                data-confirm-message="Yakin ingin menghapus data seleksi ini? Tindakan ini tidak dapat dibatalkan.">
                                                                 @csrf
                                                                 @method('DELETE')
-                                                                <button type="submit" onclick="return confirm('Yakin ingin menghapus data seleksi ini?')"
+                                                                <button type="submit"
                                                                     class="w-full text-left px-4 py-2.5 text-sm font-semibold text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition-colors">Hapus</button>
                                                             </form>
                                                             @endhasrole
@@ -240,7 +271,7 @@
                                                         </div>
                                                         <h3 class="text-lg font-semibold text-slate-700">Tidak ada data seleksi</h3>
                                                         <p class="text-sm text-slate-500 mt-1">Belum ada data seleksi yang dibuat.</p>
-                                                        <a href="{{ route('selections.create') }}" class="mt-4 inline-block text-sm text-blue-600 hover:text-blue-800 font-medium hover:underline">+ Tambah Seleksi</a>
+                                                        {{-- <a href="{{ route('selections.create') }}" class="mt-4 inline-block text-sm text-blue-600 hover:text-blue-800 font-medium hover:underline">+ Tambah Seleksi</a> --}}
                                                     </div>
                                                 </td>
                                             </tr>

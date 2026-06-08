@@ -297,9 +297,9 @@
                                 <i data-feather="calendar" class="w-5 h-5 flex-shrink-0 {{ $isInterviewActive ? 'text-white fill-[#ffffff33]' : 'text-[#87abc9] group-hover:text-white' }}"></i>
                                 <div class="flex flex-col leading-tight min-w-0">
                                     <span>Jadwal Wawancara</span>
-                                    <span class="text-[10px] font-semibold text-emerald-300 mt-0.5 truncate">
+                                    {{-- <span class="text-[10px] font-semibold text-emerald-300 mt-0.5 truncate">
                                         {{ \Carbon\Carbon::parse($myInterview->schedule)->translatedFormat('d M Y · H:i') }}
-                                    </span>
+                                    </span> --}}
                                 </div>
                             </a>
                         @else

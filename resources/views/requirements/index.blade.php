@@ -107,10 +107,11 @@
                                                             style="display:none;">
                                                             <a href="{{ route('requirements.edit', $item->id) }}"
                                                                 class="w-full block px-4 py-2.5 text-sm text-left font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">Ubah</a>
-                                                            <form action="{{ route('requirements.destroy', $item->id) }}" method="POST">
+                                                            <form action="{{ route('requirements.destroy', $item->id) }}" method="POST"
+                                                                data-confirm-message="Yakin ingin menghapus persyaratan ini? Tindakan ini tidak dapat dibatalkan.">
                                                                 @csrf
                                                                 @method('DELETE')
-                                                                <button type="submit" onclick="return confirm('Yakin ingin menghapus persyaratan ini?')"
+                                                                <button type="submit"
                                                                     class="w-full text-left px-4 py-2.5 text-sm font-semibold text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition-colors">Hapus</button>
                                                             </form>
                                                         </div>

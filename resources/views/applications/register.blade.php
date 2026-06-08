@@ -251,11 +251,11 @@
                                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 {{-- Nilai Data Pendaftar --}}
                                                 <div>
-                                                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Nilai Data Pendaftar</label>
+                                                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2"> Data Pendaftar</label>
                                                     <input type="text"
                                                         :name="`requirement_values[${index}][applicant_value]`"
                                                         x-model="valuesByRequirement[requirement.requirement_id]"
-                                                        placeholder="Masukkan nilai / data pendaftar"
+                                                        placeholder="Masukkan data pendaftar"
                                                         class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all">
                                                 </div>
 

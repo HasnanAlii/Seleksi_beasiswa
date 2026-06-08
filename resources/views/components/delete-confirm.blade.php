@@ -1,15 +1,19 @@
 <div x-data="{
     isOpen: false,
     isLoading: false,
-    title: 'Hapus Data?',
-    message: 'Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan.',
+    title: 'Konfirmasi',
+    message: 'Apakah Anda yakin?',
+    confirmLabel: 'Ya, Lanjutkan',
+    isDeleteAction: false,
     formToSubmit: null,
 
     init() {
         window.addEventListener('confirm-deletion', (e) => {
             if (this.isLoading) return;
-            this.title = e.detail.title || 'Hapus Data?';
-            this.message = e.detail.message || 'Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan.';
+            this.title = e.detail.title || 'Konfirmasi';
+            this.message = e.detail.message || 'Apakah Anda yakin?';
+            this.confirmLabel = e.detail.confirmLabel || 'Ya, Lanjutkan';
+            this.isDeleteAction = e.detail.isDeleteAction || false;
             this.formToSubmit = e.detail.form;
             this.isOpen = true;
         });
@@ -129,9 +133,12 @@
                 <!-- Buttons -->
                 <div class="flex flex-col gap-3">
                     <button type="button" @click="confirm()" :disabled="isLoading"
-                        class="w-full flex justify-center items-center py-3.5 text-[15px] font-extrabold text-white bg-rose-500 hover:bg-rose-600 transition-all rounded-xl shadow-lg shadow-rose-500/30 border border-transparent outline-none focus:ring-4 focus:ring-rose-500/30 disabled:opacity-50 disabled:cursor-not-allowed">
+                        :class="isDeleteAction
+                            ? 'bg-rose-500 hover:bg-rose-600 shadow-rose-500/30 focus:ring-rose-500/30'
+                            : 'bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 shadow-violet-500/30 focus:ring-violet-500/30'"
+                        class="w-full flex justify-center items-center py-3.5 text-[15px] font-extrabold text-white transition-all rounded-xl shadow-lg border border-transparent outline-none focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed">
                         <svg x-show="isLoading" class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" style="display:none;"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                        <span x-text="isLoading ? 'Memproses...' : 'Ya, Hapus Permanen'"></span>
+                        <span x-text="isLoading ? 'Memproses...' : confirmLabel"></span>
                     </button>
                     <button type="button" @click="close()" :disabled="isLoading"
                         class="w-full py-3.5 text-[15px] font-extrabold text-slate-500 bg-slate-50 hover:bg-slate-100 transition-all rounded-xl border border-slate-200 outline-none focus:ring-4 focus:ring-slate-200/50 disabled:opacity-50 disabled:cursor-not-allowed">
@@ -158,11 +165,16 @@
         if (confirmMessage || isDelete) {
             e.preventDefault();
 
+            const confirmTitle = form.getAttribute('data-confirm-title');
+            const confirmLabel = form.getAttribute('data-confirm-label');
+
             window.dispatchEvent(new CustomEvent('confirm-deletion', {
                 detail: {
-                    title: isDelete ? 'Hapus Data?' : 'Konfirmasi Tindakan',
+                    title: confirmTitle || (isDelete ? 'Hapus Data?' : 'Konfirmasi Tindakan'),
                     message: confirmMessage ||
                         'Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan.',
+                    confirmLabel: confirmLabel || (isDelete ? 'Ya, Hapus Permanen' : 'Ya, Lanjutkan'),
+                    isDeleteAction: !!isDelete,
                     form: form
                 }
             }));

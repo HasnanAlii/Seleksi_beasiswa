@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Application;
 use App\Models\Scholarship;
 use App\Models\Selection;
+use App\Services\FuzzySelectionService;
 use Illuminate\Http\Request;
 
 class SelectionController extends Controller
@@ -137,6 +138,44 @@ class SelectionController extends Controller
         }
 
         return redirect()->route('selections.index')->with('success', 'Data seleksi berhasil dihapus.');
+    }
+
+    /**
+     * Preview fuzzy logic selection results (without applying).
+     */
+    public function previewFuzzy(FuzzySelectionService $service)
+    {
+        $results = $service->runBatch();
+
+        $layakCount = collect($results)->where('recommended_status', 'layak')->count();
+        $tidakLayakCount = collect($results)->where('recommended_status', 'tidak layak')->count();
+
+        return view('selections.fuzzy-preview', compact(
+            'results',
+            'layakCount',
+            'tidakLayakCount',
+        ));
+    }
+
+    /**
+     * Apply fuzzy logic results to create/update Selection records.
+     */
+    public function applyFuzzy(Request $request, FuzzySelectionService $service)
+    {
+        $results = $service->runBatch();
+        $applied = $service->applyResults($results);
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Seleksi AI selesai. {$applied} data kelayakan berhasil diperbarui.",
+                'applied' => $applied,
+                'redirect' => route('selections.index'),
+            ]);
+        }
+
+        return redirect()->route('selections.index')
+            ->with('success', "Seleksi AI (Fuzzy Logic) selesai! {$applied} data kelayakan telah diperbarui.");
     }
 
     /**

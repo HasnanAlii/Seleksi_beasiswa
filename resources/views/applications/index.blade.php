@@ -149,17 +149,17 @@
                                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                                     @if ($item->status == 'menunggu')
                                                         <span
-                                                            class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-600 border border-amber-100/50">
+                                                            class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-500 border border-slate-200">
                                                             <div
-                                                                class="flex items-center justify-center w-5 h-5 rounded-full bg-amber-500 text-white">
+                                                                class="flex items-center justify-center w-5 h-5 rounded-full bg-slate-400 text-white">
                                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3"
                                                                     viewBox="0 0 20 20" fill="currentColor">
                                                                     <path fill-rule="evenodd"
-                                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                                                                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
                                                                         clip-rule="evenodd" />
                                                                 </svg>
                                                             </div>
-                                                            Menunggu
+                                                            Belum Diverifikasi
                                                         </span>
                                                     @elseif($item->status == 'diproses')
                                                         <span
@@ -251,11 +251,11 @@
                                                             </a>
                                                             <form
                                                                 action="{{ route('applications.destroy', $item->id) }}"
-                                                                method="POST">
+                                                                method="POST"
+                                                                data-confirm-message="Yakin ingin menghapus pendaftaran ini? Tindakan ini tidak dapat dibatalkan.">
                                                                 @csrf
                                                                 @method('DELETE')
                                                                 <button type="submit"
-                                                                    onclick="return confirm('Yakin ingin menghapus pendaftaran ini?')"
                                                                     class="w-full text-left px-4 py-2.5 text-sm font-semibold text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition-colors">
                                                                     Hapus
                                                                 </button>

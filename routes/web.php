@@ -15,14 +15,15 @@ use App\Http\Controllers\SelectionController;
 use App\Http\Controllers\StudentController;
 use App\Models\Application;
 use App\Models\Interview;
+use App\Models\News;
 use App\Models\Scholarship;
 use App\Models\Student;
-use App\Models\News;
 use Illuminate\Support\Facades\Route;
 
 // --- Rute Halaman Utama ---
 Route::get('/', function () {
     $latestNews = News::latest()->take(3)->get();
+
     return view('welcome', compact('latestNews'));
 });
 
@@ -150,6 +151,8 @@ Route::middleware('auth')->group(function () {
         Route::delete('fuzzy-memberships/{fuzzyMembership}', [FuzzyMembershipController::class, 'destroy'])->name('fuzzy-memberships.destroy');
 
         // --- Manajemen Seleksi (Aksi) ---
+        Route::get('selections/fuzzy-preview', [SelectionController::class, 'previewFuzzy'])->name('selections.fuzzy-preview');
+        Route::post('selections/apply-fuzzy', [SelectionController::class, 'applyFuzzy'])->name('selections.apply-fuzzy');
         Route::get('selections/create', [SelectionController::class, 'create'])->name('selections.create');
         Route::post('selections', [SelectionController::class, 'store'])->name('selections.store');
         Route::get('selections/{selection}/edit', [SelectionController::class, 'edit'])->name('selections.edit');
