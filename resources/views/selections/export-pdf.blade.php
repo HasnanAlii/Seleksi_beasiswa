@@ -92,7 +92,7 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
-            font-size: 11px;
+            font-size: 9px;
         }
 
         .data-table th,
@@ -193,30 +193,125 @@
         @endif
     </table>
 
+    @php
+        /**
+         * Helper: ambil nilai numerik dari requirementValues berdasarkan kata kunci nama kriteria.
+         * @param \Illuminate\Database\Eloquent\Collection $rvs
+         * @param string $keyword  — substring case-insensitive
+         * @return string
+         */
+        $getRv = function ($rvs, string $keyword) {
+            if (! $rvs) {
+                return '-';
+            }
+            $match = $rvs->first(fn ($rv) => str_contains(
+                strtolower($rv->requirement?->requirement_name ?? ''),
+                strtolower($keyword)
+            ));
+            return $match ? $match->applicant_value : '-';
+        };
+
+        /**
+         * Normalisasi status DTKS:
+         *   0 / '' / '-'  → Tidak Terdaftar
+         *   1             → Desil 1
+         *   2             → Desil 2
+         *   3             → Desil 3
+         */
+        $dtksLabel = function ($val) {
+            return match ((string) $val) {
+                '1'     => 'Desil 1',
+                '2'     => 'Desil 2',
+                '3'     => 'Desil 3',
+                default => 'Tidak Terdaftar',
+            };
+        };
+
+        /**
+         * Normalisasi Prestasi Akademik (jumlah prestasi):
+         *   0 → Tidak Ada (0)
+         *   1–2 → Sedikit (n)
+         *   3 → Sedang (3)
+         *   4 → Banyak (4)
+         *   5+ → Sangat Banyak (n)
+         */
+        $prestasiLabel = function ($val) {
+            if ($val === '-' || $val === '' || $val === null) {
+                return '-';
+            }
+            $n = (int) $val;
+            $label = match (true) {
+                $n <= 0 => 'Tidak Ada',
+                $n <= 2 => 'Sedikit',
+                $n <= 3 => 'Sedang',
+                $n <= 4 => 'Banyak',
+                default => 'Sangat Banyak',
+            };
+            return "{$label} ({$n})";
+        };
+    @endphp
+
     <table class="data-table">
         <thead>
             <tr>
-                <th style="width: 30px;">No</th>
+                <th style="width: 25px;">No</th>
                 <th>Nama Mahasiswa</th>
                 <th>NPM</th>
                 <th>Beasiswa</th>
+                <th>Penghasilan OT (Rp)</th>
+                <th>Tanggungan OT</th>
+                <th>Status DTKS</th>
+                <th>Prestasi</th>
+                <th>Wawancara</th>
                 <th>Status</th>
                 <th>Tanggal</th>
             </tr>
         </thead>
         <tbody>
             @forelse($data as $i => $item)
+                @php
+                    $rvs         = $item->application?->requirementValues ?? collect();
+                    $penghasilan = $getRv($rvs, 'penghasilan');
+                    $tanggungan  = $getRv($rvs, 'tanggungan');
+                    $dtksRaw     = $getRv($rvs, 'dtks');
+                    $prestasi    = $getRv($rvs, 'prestasi');
+
+                    // Format penghasilan sebagai Rupiah jika numerik
+                    $penghasilanFmt = is_numeric($penghasilan)
+                        ? 'Rp ' . number_format((float) $penghasilan, 0, ',', '.')
+                        : $penghasilan;
+
+                    // Nilai wawancara: rata-rata dari interview assessments
+                    $nilaiWawancara = '-';
+                    $interview = $item->application?->interviews?->first();
+                    if ($interview && $interview->assessments->isNotEmpty()) {
+                        $avg = round($interview->assessments->avg('score'), 2);
+                        $nilaiWawancara = $avg;
+                    }
+
+                    // Mapping status untuk laporan PDF
+                    $displayStatus = match (strtolower($item->status)) {
+                        'tidak diterima' => 'Tidak Layak',
+                        'layak'          => 'Layak',
+                        default          => ucwords($item->status),
+                    };
+                @endphp
                 <tr>
                     <td class="center">{{ $i + 1 }}</td>
                     <td>{{ $item->application?->student?->name ?? '-' }}</td>
                     <td class="center">{{ $item->application?->student?->student_number ?? '-' }}</td>
                     <td>{{ $item->application?->scholarship?->scholarship_name ?? '-' }}</td>
-                    <td class="center">{{ ucwords($item->status) }}</td>
+                    <td class="center">{{ $penghasilanFmt }}</td>
+                    <td class="center">{{ $tanggungan !== '-' ? $tanggungan . ' orang' : '-' }}</td>
+                    <td class="center">{{ $dtksLabel($dtksRaw) }}</td>
+                    <td class="center">{{ $prestasiLabel($prestasi) }}</td>
+                    <td class="center">{{ $nilaiWawancara }}</td>
+                    <td class="center">{{ $displayStatus }}</td>
                     <td class="center">{{ \Carbon\Carbon::parse($item->date)->translatedFormat('d M Y') }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6" class="center">Tidak ada data seleksi.</td>
+                    <td colspan="11" class="center">Tidak ada data seleksi.</td>
                 </tr>
             @endforelse
         </tbody>

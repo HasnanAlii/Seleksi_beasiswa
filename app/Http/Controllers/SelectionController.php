@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\SelectionExport;
+use App\Imports\SelectionUpdateImport;
 use App\Models\Application;
 use App\Models\Scholarship;
 use App\Models\Selection;
@@ -159,7 +160,12 @@ class SelectionController extends Controller
 
         if ($format === 'pdf') {
             $data = Selection::query()
-                ->with(['application.student', 'application.scholarship'])
+                ->with([
+                    'application.student',
+                    'application.scholarship',
+                    'application.requirementValues.requirement',
+                    'application.interviews.assessments',
+                ])
                 ->when($filters['search'], function ($q, $search) {
                     $q->whereHas('application.student', fn ($qs) => $qs
                         ->where('name', 'like', "%{$search}%")
@@ -192,13 +198,13 @@ class SelectionController extends Controller
     public function importPreview(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls'
+            'file' => 'required|file|mimes:xlsx,xls',
         ]);
 
         $file = $request->file('file');
-        
+
         try {
-            $rows = Excel::toArray(new \App\Imports\SelectionUpdateImport, $file);
+            $rows = Excel::toArray(new SelectionUpdateImport, $file);
             $sheet = $rows[0] ?? [];
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal membaca file Excel. Pastikan format file sesuai.');
@@ -206,7 +212,7 @@ class SelectionController extends Controller
 
         $headerRowIndex = -1;
         foreach ($sheet as $index => $row) {
-            if (isset($row[0]) && strtolower(trim((string)$row[0])) === 'no') {
+            if (isset($row[0]) && strtolower(trim((string) $row[0])) === 'no') {
                 $headerRowIndex = $index;
                 break;
             }
@@ -216,32 +222,58 @@ class SelectionController extends Controller
             return back()->with('error', 'Format tabel tidak dikenali. Pastikan ada baris header yang diawali dengan "No".');
         }
 
-        $headers = array_map(fn($h) => strtolower(trim((string)$h)), $sheet[$headerRowIndex]);
+        $headers = array_map(fn ($h) => strtolower(trim((string) $h)), $sheet[$headerRowIndex]);
+
+        // Cari kolom dengan exact match terlebih dahulu, agar 'status dtks' tidak
+        // tersalah-ambil sebagai 'status'.
         $npmIndex = array_search('npm', $headers);
         $beasiswaIndex = array_search('beasiswa', $headers);
-        $statusIndex = array_search('status', $headers);
         $tahapIndex = array_search('tahap', $headers);
+
+        // 'status' — exact match (bukan 'status dtks', 'status wawancara', dst)
+        $statusIndex = false;
+        foreach ($headers as $idx => $h) {
+            if ($h === 'status') {
+                $statusIndex = $idx;
+                break;
+            }
+        }
+
+        /**
+         * Normalisasi status Excel → nilai internal DB.
+         * Export menggunakan label yang lebih ramah (Tidak Layak, Layak),
+         * sementara DB menyimpan: 'layak', 'tidak diterima', dsb.
+         */
+        $normalizeStatus = fn (string $s): string => match ($s) {
+            'tidak layak' => 'tidak diterima',
+            default => $s,
+        };
 
         if ($npmIndex === false || $beasiswaIndex === false || $statusIndex === false) {
             return back()->with('error', 'Kolom wajib (NPM, Beasiswa, Status) tidak ditemukan di file Excel.');
         }
 
         $previewData = [];
-        
+
         for ($i = $headerRowIndex + 1; $i < count($sheet); $i++) {
             $row = $sheet[$i];
-            if (empty(trim((string)($row[0] ?? '')))) continue; 
-            
-            $npm = trim((string)($row[$npmIndex] ?? ''));
-            $beasiswa = trim((string)($row[$beasiswaIndex] ?? ''));
-            $statusExcel = strtolower(trim((string)($row[$statusIndex] ?? '')));
-            $tahapExcel = $tahapIndex !== false ? trim((string)($row[$tahapIndex] ?? '')) : null;
+            if (empty(trim((string) ($row[0] ?? '')))) {
+                continue;
+            }
 
-            if (!$npm || !$beasiswa || !$statusExcel) continue;
+            $npm = trim((string) ($row[$npmIndex] ?? ''));
+            $beasiswa = trim((string) ($row[$beasiswaIndex] ?? ''));
+            $rawStatus = strtolower(trim((string) ($row[$statusIndex] ?? '')));
+            $statusExcel = $normalizeStatus($rawStatus);          // nilai internal DB
+            $tahapExcel = $tahapIndex !== false ? trim((string) ($row[$tahapIndex] ?? '')) : null;
+
+            if (! $npm || ! $beasiswa || ! $statusExcel) {
+                continue;
+            }
 
             $selection = Selection::with(['application.student', 'application.scholarship'])
-                ->whereHas('application.student', fn($q) => $q->where('student_number', $npm))
-                ->whereHas('application.scholarship', fn($q) => $q->where('scholarship_name', $beasiswa))
+                ->whereHas('application.student', fn ($q) => $q->where('student_number', $npm))
+                ->whereHas('application.scholarship', fn ($q) => $q->where('scholarship_name', $beasiswa))
                 ->first();
 
             if ($selection) {
@@ -263,17 +295,17 @@ class SelectionController extends Controller
                     'new_status' => $statusExcel,
                     'old_stage' => $selection->stage,
                     'new_stage' => $tahapExcel ?? $selection->stage,
-                    'changed' => $changed
+                    'changed' => $changed,
                 ];
             }
         }
 
-        $cacheKey = 'import_selection_' . auth()->id();
+        $cacheKey = 'import_selection_'.auth()->id();
         cache()->put($cacheKey, collect($previewData)->where('changed', true)->toArray(), now()->addHour());
 
         return view('selections.import-preview', [
             'previewData' => collect($previewData),
-            'cacheKey' => $cacheKey
+            'cacheKey' => $cacheKey,
         ]);
     }
 
@@ -285,7 +317,7 @@ class SelectionController extends Controller
         $cacheKey = $request->input('cache_key');
         $updates = cache()->get($cacheKey);
 
-        if (!$updates) {
+        if (! $updates) {
             return redirect()->route('selections.index')->with('error', 'Sesi import telah kedaluwarsa atau tidak valid. Silakan upload ulang file.');
         }
 
@@ -294,7 +326,7 @@ class SelectionController extends Controller
             $selection = Selection::find($data['selection_id']);
             if ($selection) {
                 $updatePayload = ['status' => $data['new_status']];
-                if (!empty($data['new_stage'])) {
+                if (! empty($data['new_stage'])) {
                     $updatePayload['stage'] = $data['new_stage'];
                 }
                 $selection->update($updatePayload);

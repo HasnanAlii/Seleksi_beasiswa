@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-            <h2 class="font-extrabold text-2xl text-gray-800 leading-tight tracking-tight">Seleksi AI – Fuzzy Logic</h2>
+            <h2 class="font-extrabold text-2xl text-gray-800 leading-tight tracking-tight">Seleksi AI</h2>
             <nav class="flex text-sm font-medium text-gray-500">
                 <a href="{{ route('dashboard') }}" class="hover:text-blue-600 cursor-pointer transition">Dashboard</a>
                 <span class="mx-2">/</span>
@@ -101,7 +101,8 @@
                                     {{ count($results) }} Pendaftar</h3>
                                 <p class="text-sm text-slate-500 mt-0.5">
                                     Metode <strong class="text-violet-600">Fuzzy Tsukamoto</strong>: defuzzifikasi
-                                    rata-rata terbobot z = Σ(α·z) / Σ(α). Nilai wawancara disertakan sebagai kriteria tambahan. Threshold layak ≥ 50.
+                                    rata-rata terbobot z = Σ(α·z) / Σ(α). 
+                                    {{-- Nilai wawancara disertakan sebagai kriteria tambahan. Threshold layak ≥ 50. --}}
                                 </p>
                             </div>
                         </div>
@@ -318,91 +319,187 @@
                                                         </div>
                                                     @endif --}}
 
-                                                    <div
-                                                        class="text-xs font-bold text-violet-700 uppercase tracking-widest mb-3">
-                                                        Detail Kriteria – Fuzzifikasi Tsukamoto</div>
-                                                    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-                                                        @foreach ($result['criteria_details'] as $detail)
-                                                            @if (!empty($detail['is_interview']))
-                                                                {{-- Special styling for interview criterion --}}
-                                                                <div class="rounded-xl bg-sky-50 border border-sky-200 px-4 py-3 shadow-sm">
-                                                                    <div class="flex items-center gap-1.5 mb-1">
-                                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-sky-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                                                                        </svg>
-                                                                        <div class="text-xs font-bold text-sky-700">{{ $detail['criteria_name'] }}</div>
-                                                                        <span class="ml-auto text-[9px] font-bold bg-sky-200 text-sky-700 rounded-full px-1.5 py-0.5 uppercase tracking-wider">↑ Wawancara</span>
-                                                                    </div>
-                                                                    <div class="flex items-center gap-2 text-xs text-slate-600 flex-wrap">
-                                                                        <span>Nilai: <strong class="text-slate-800">{{ $detail['applicant_value'] }}</strong></span>
-                                                                        <span class="text-slate-300">|</span>
-                                                                        <span>[{{ $detail['min_value'] }} … {{ $detail['max_value'] }}] <span class="italic text-sky-500">↑ besar=baik</span></span>
-                                                                    </div>
-                                                                    <div class="mt-2 flex items-center gap-2">
-                                                                        <span class="text-[10px] text-sky-600 font-semibold">μ_good</span>
-                                                                        <div class="h-1.5 flex-1 rounded-full bg-sky-100 overflow-hidden">
-                                                                            <div class="h-full bg-sky-500 rounded-full"
-                                                                                style="width: {{ min($detail['mu_good'] * 100, 100) }}%"></div>
-                                                                        </div>
-                                                                        <span class="text-[10px] font-black text-sky-600">{{ $detail['mu_good'] }}</span>
-                                                                    </div>
-                                                                    <div class="mt-1 flex items-center gap-2">
-                                                                        <span class="text-[10px] text-rose-600 font-semibold">μ_bad&nbsp;</span>
-                                                                        <div class="h-1.5 flex-1 rounded-full bg-rose-100 overflow-hidden">
-                                                                            <div class="h-full bg-rose-400 rounded-full"
-                                                                                style="width: {{ min($detail['mu_bad'] * 100, 100) }}%"></div>
-                                                                        </div>
-                                                                        <span class="text-[10px] font-black text-rose-500">{{ $detail['mu_bad'] }}</span>
-                                                                    </div>
+                                                    {{-- Defuzzification summary --}}
+                                                    @php $wr = $result['winning_rule'] ?? null; @endphp
+                                                    <div class="mb-4 grid grid-cols-2 gap-2 text-center">
+                                                        <div class="rounded-xl bg-white border border-violet-100 px-3 py-2 shadow-sm">
+                                                            <div class="text-[9px] font-bold text-violet-400 uppercase tracking-wider mb-0.5">Skor Fuzzy</div>
+                                                            <div class="text-base font-black {{ $result['recommended_status']==='layak' ? 'text-emerald-600' : 'text-rose-600' }}">{{ $result['fuzzy_score'] }}</div>
+                                                            {{-- <div class="text-[9px] text-slate-400">= Σ(α·z) / Σα</div> --}}
+                                                        </div>
+                                                        {{-- <div class="rounded-xl bg-indigo-50 border border-indigo-200 px-3 py-2 shadow-sm">
+                                                            <div class="text-[9px] font-bold text-indigo-500 uppercase tracking-wider mb-0.5">Σ(α × z)</div>
+                                                            <div class="text-base font-black text-indigo-600">{{ $result['sum_alpha_z'] ?? '-' }}</div>
+                                                            <div class="text-[9px] text-slate-400">pembilang</div>
+                                                        </div>
+                                                        <div class="rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 shadow-sm">
+                                                            <div class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Σα</div>
+                                                            <div class="text-base font-black text-slate-700">{{ $result['sum_alpha'] ?? '-' }}</div>
+                                                            <div class="text-[9px] text-slate-400">penyebut</div>
+                                                        </div> --}}
+                                                        <div class="rounded-xl bg-{{ $result['recommended_status']==='layak' ? 'emerald' : 'rose' }}-50 border-2 border-{{ $result['recommended_status']==='layak' ? 'emerald' : 'rose' }}-300 px-3 py-2 shadow-sm">
+                                                            <div class="text-[9px] font-bold text-{{ $result['recommended_status']==='layak' ? 'emerald' : 'rose' }}-400 uppercase tracking-wider mb-0.5">Keputusan</div>
+                                                            <div class="text-sm font-black text-{{ $result['recommended_status']==='layak' ? 'emerald' : 'rose' }}-600 uppercase">{{ $result['recommended_status'] }}</div>
+                                                            {{-- <div class="text-[9px] text-slate-400">{{ $result['fuzzy_score'] }} {{ $result['recommended_status']==='layak' ? '> 50' : '≤ 50' }}</div> --}}
+                                                        </div>
+                                                    </div>
+
+                                                    {{-- Warning jika tidak ada rule yang aktif --}}
+                                                    @if (empty($result['rule_results']))
+                                                        <div class="mb-4 flex items-start gap-3 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 shadow-sm">
+                                                            <span class="text-lg mt-0.5">⚠️</span>
+                                                            <div>
+                                                                <div class="text-xs font-bold text-amber-700 mb-0.5">Tidak Ada Rule Aktif (Kombinasi Belum Terdaftar)</div>
+                                                                <div class="text-[11px] text-amber-600 leading-relaxed">
+                                                                    Data pendaftar ini tidak cocok dengan satu pun dari <strong>15 aturan utama</strong> yang disimpan di sistem. Aturan kombinasi lain belum ditambahkan ke database. 
+                                                                    Sistem menggunakan perhitungan cadangan (<em>fallback mode</em>) berdasarkan rata-rata derajat keanggotaan agar penilaian tetap dapat diproses.
                                                                 </div>
-                                                            @else
-                                                                {{-- Regular / Inverse criteria card --}}
-                                                                @php
-                                                                    $isInv  = !empty($detail['is_inverse']);
-                                                                    $isInc  = !empty($detail['is_increasing']);
-                                                                    $cardBorder = $isInv ? 'border-amber-200 bg-amber-50' : 'border-violet-100 bg-white';
-                                                                    $nameColor  = $isInv ? 'text-amber-700' : 'text-violet-700';
-                                                                @endphp
-                                                                <div class="rounded-xl {{ $cardBorder }} px-4 py-3 shadow-sm">
-                                                                    <div class="flex items-center gap-1.5 mb-1">
-                                                                        <div class="text-xs font-bold {{ $nameColor }} flex-1">
-                                                                            {{ $detail['criteria_name'] }}
-                                                                        </div>
-                                                                        @if ($isInv)
-                                                                            <span class="text-[9px] font-bold bg-amber-200 text-amber-700 rounded-full px-1.5 py-0.5 uppercase tracking-wider">↓ Inverse</span>
-                                                                        @elseif ($isInc)
-                                                                            <span class="text-[9px] font-bold bg-emerald-100 text-emerald-700 rounded-full px-1.5 py-0.5 uppercase tracking-wider">↑ Increasing</span>
-                                                                        @endif
-                                                                    </div>
-                                                                    <div class="flex items-center gap-2 text-xs text-slate-600 flex-wrap">
-                                                                        <span>Nilai: <strong class="text-slate-800">{{ $detail['applicant_value'] }}</strong></span>
-                                                                        <span class="text-slate-300">|</span>
-                                                                        @if ($isInv)
-                                                                            <span>[{{ $detail['min_value'] }} … {{ $detail['max_value'] }}] <span class="italic text-amber-500">↓ kecil=baik</span></span>
-                                                                        @elseif ($isInc)
-                                                                            <span>[{{ $detail['min_value'] }} … {{ $detail['max_value'] }}] <span class="italic text-emerald-500">↑ besar=baik</span></span>
-                                                                        @else
-                                                                            <span>[{{ $detail['min_value'] }}, {{ $detail['mid_value'] }}, {{ $detail['max_value'] }}]</span>
-                                                                        @endif
-                                                                    </div>
-                                                                    <div class="mt-2 flex items-center gap-2">
-                                                                        <span class="text-[10px] text-emerald-600 font-semibold">μ_good</span>
-                                                                        <div class="h-1.5 flex-1 rounded-full bg-emerald-100 overflow-hidden">
-                                                                            <div class="h-full bg-emerald-500 rounded-full"
-                                                                                style="width: {{ min($detail['mu_good'] * 100, 100) }}%"></div>
-                                                                        </div>
-                                                                        <span class="text-[10px] font-black text-emerald-600">{{ $detail['mu_good'] }}</span>
-                                                                    </div>
-                                                                    <div class="mt-1 flex items-center gap-2">
-                                                                        <span class="text-[10px] text-rose-600 font-semibold">μ_bad&nbsp;</span>
-                                                                        <div class="h-1.5 flex-1 rounded-full bg-rose-100 overflow-hidden">
-                                                                            <div class="h-full bg-rose-400 rounded-full"
-                                                                                style="width: {{ min($detail['mu_bad'] * 100, 100) }}%"></div>
-                                                                        </div>
-                                                                        <span class="text-[10px] font-black text-rose-500">{{ $detail['mu_bad'] }}</span>
-                                                                    </div>
+                                                            </div>
+                                                        </div>
+                                                    @endif
+
+                                                    {{-- Rule Inference Table --}}
+                                                    @if (!empty($result['rule_results']))
+                                                        <div class="text-xs font-bold text-violet-700 uppercase tracking-widest mb-2">Inferensi – Rules Aktif (α > 0)</div>
+                                                        @php
+                                                            // Urutkan berdasarkan α tertinggi
+                                                            $sortedRules = collect($result['rule_results'])
+                                                                ->sortByDesc('alpha')
+                                                                ->values()
+                                                                ->all();
+                                                            $limitShow  = 10;
+                                                            $totalRules = count($sortedRules);
+                                                        @endphp
+                                                        <div x-data="{ showAll: false }" class="rounded-xl border border-violet-100 overflow-hidden mb-4">
+                                                            <table class="min-w-full divide-y divide-violet-50 text-[10px]">
+                                                                <thead class="bg-violet-50">
+                                                                    <tr>
+                                                                        <th class="px-3 py-2 text-left font-bold text-violet-500 uppercase">Rule</th>
+                                                                        <th class="px-3 py-2 text-center font-bold text-violet-500 uppercase">α (firing)</th>
+                                                                        <th class="px-3 py-2 text-center font-bold text-violet-500 uppercase">z (output)</th>
+                                                                        <th class="px-3 py-2 text-center font-bold text-violet-500 uppercase">Output</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody class="bg-white divide-y divide-violet-50">
+                                                                    @foreach ($sortedRules as $i => $rr)
+                                                                        @php $isWinner = $wr && $wr['rule'] === $rr['rule']; @endphp
+                                                                        <tr
+                                                                            x-show="showAll || {{ $i }} < {{ $limitShow }} || {{ $isWinner ? 'true' : 'false' }}"
+                                                                            class="{{ $isWinner ? 'ring-2 ring-inset ring-violet-400 bg-violet-50' : ($rr['output']==='layak' ? 'bg-emerald-50/40' : 'bg-rose-50/40') }}">
+                                                                            <td class="px-3 py-1.5 font-bold text-slate-600">
+                                                                                @if($isWinner)<span class="mr-1 text-violet-500">★</span>@endif
+                                                                                {{ $rr['rule'] }}
+                                                                            </td>
+                                                                            <td class="px-3 py-1.5 text-center font-black text-indigo-600">{{ $rr['alpha'] }}</td>
+                                                                            <td class="px-3 py-1.5 text-center font-black {{ $isWinner ? 'text-violet-700' : 'text-slate-700' }}">{{ $rr['z'] }}</td>
+                                                                            <td class="px-3 py-1.5 text-center">
+                                                                                <span class="inline-block rounded-full px-2 py-0.5 text-[9px] font-black uppercase {{ $rr['output']==='layak' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700' }}">{{ $rr['output'] }}</span>
+                                                                            </td>
+                                                                        </tr>
+                                                                    @endforeach
+                                                                </tbody>
+                                                            </table>
+                                                            @if ($totalRules > $limitShow)
+                                                                <div class="px-4 py-2 bg-violet-50/60 border-t border-violet-100 flex items-center justify-between">
+                                                                    <span class="text-[10px] text-violet-500">
+                                                                        Menampilkan <span x-text="showAll ? '{{ $totalRules }}' : '{{ min($limitShow, $totalRules) }}'"></span> dari {{ $totalRules }} rules aktif
+                                                                    </span>
+                                                                    <button @click="showAll = !showAll"
+                                                                        class="text-[10px] font-bold text-violet-600 hover:text-violet-800 transition-colors">
+                                                                        <span x-text="showAll ? '▲ Sembunyikan' : '▼ Tampilkan semua ({{ $totalRules }})'"></span>
+                                                                    </button>
                                                                 </div>
                                                             @endif
+                                                        </div>
+                                                    @endif
+
+
+
+                                                    <div class="text-xs font-bold text-violet-700 uppercase tracking-widest mb-3">
+                                                        Fuzzifikasi – Derajat Keanggotaan per Kriteria</div>
+                                                    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                                                        @foreach ($result['criteria_details'] as $detail)
+                                                            @php
+                                                                $isInv = !empty($detail['is_inverse']);
+                                                                $isIv  = !empty($detail['is_interview']);
+                                                                if ($isIv) {
+                                                                    $cardBg     = 'bg-sky-50 border-sky-200';
+                                                                    $nameColor  = 'text-sky-700';
+                                                                    $badgeCls   = 'bg-sky-200 text-sky-700';
+                                                                    // $badgeLbl   = '↑ Wawancara';
+                                                                    $dirLbl     = '↑ besar = baik';
+                                                                } elseif ($isInv) {
+                                                                    $cardBg     = 'bg-amber-50 border-amber-200';
+                                                                    $nameColor  = 'text-amber-700';
+                                                                    $badgeCls   = 'bg-amber-200 text-amber-700';
+                                                                    // $badgeLbl   = '↓ Inverse';
+                                                                    $dirLbl     = '↓ kecil = baik';
+                                                                } else {
+                                                                    $cardBg     = 'bg-white border-violet-100';
+                                                                    $nameColor  = 'text-violet-700';
+                                                                    $badgeCls   = 'bg-emerald-100 text-emerald-700';
+                                                                    // $badgeLbl   = '↑ Increasing';
+                                                                    $dirLbl     = '↑ besar = baik';
+                                                                }
+                                                                $setLow  = $detail['set_low']  ?? '-';
+                                                                $setMid  = $detail['set_mid']  ?? '-';
+                                                                $setHigh = $detail['set_high'] ?? '-';
+                                                                $muLow   = $detail['mu_low']   ?? 0;
+                                                                $muMid   = $detail['mu_mid']   ?? 0;
+                                                                $muHigh  = $detail['mu_high']  ?? 0;
+                                                            @endphp
+                                                            <div class="rounded-xl {{ $cardBg }} border px-4 py-3 shadow-sm">
+                                                                <div class="flex items-center gap-1.5 mb-2">
+                                                                    <div class="text-xs font-bold {{ $nameColor }} flex-1 leading-tight">{{ $detail['criteria_name'] }}</div>
+                                                                    {{-- <span class="text-[9px] font-bold {{ $badgeCls }} rounded-full px-1.5 py-0.5 uppercase tracking-wider shrink-0">{{ $badgeLbl }}</span> --}}
+                                                                </div>
+                                                                <div class="flex flex-wrap gap-x-2 gap-y-0.5 text-xs text-slate-500 mb-3">
+                                                                    <span>Nilai: <strong class="text-slate-800">{{ $detail['applicant_value'] }}</strong></span>
+                                                                    <span class="italic">{{ $dirLbl }}</span>
+                                                                </div>
+                                                                {{-- 3 himpunan --}}
+                                                                <div class="space-y-1.5 mb-2">
+                                                                    <div class="flex items-center gap-2">
+                                                                        <span class="w-20 shrink-0 text-[10px] font-semibold text-slate-500 truncate">{{ $setLow }}</span>
+                                                                        <div class="h-1.5 flex-1 rounded-full bg-slate-100 overflow-hidden">
+                                                                            <div class="h-full bg-slate-400 rounded-full" style="width:{{ min($muLow*100,100) }}%"></div>
+                                                                        </div>
+                                                                        <span class="w-7 text-right text-[10px] font-black text-slate-500">{{ $muLow }}</span>
+                                                                    </div>
+                                                                    <div class="flex items-center gap-2">
+                                                                        <span class="w-20 shrink-0 text-[10px] font-semibold text-indigo-500 truncate">{{ $setMid }}</span>
+                                                                        <div class="h-1.5 flex-1 rounded-full bg-indigo-100 overflow-hidden">
+                                                                            <div class="h-full bg-indigo-400 rounded-full" style="width:{{ min($muMid*100,100) }}%"></div>
+                                                                        </div>
+                                                                        <span class="w-7 text-right text-[10px] font-black text-indigo-500">{{ $muMid }}</span>
+                                                                    </div>
+                                                                    <div class="flex items-center gap-2">
+                                                                        <span class="w-20 shrink-0 text-[10px] font-semibold text-emerald-600 truncate">{{ $setHigh }}</span>
+                                                                        <div class="h-1.5 flex-1 rounded-full bg-emerald-100 overflow-hidden">
+                                                                            <div class="h-full bg-emerald-500 rounded-full" style="width:{{ min($muHigh*100,100) }}%"></div>
+                                                                        </div>
+                                                                        <span class="w-7 text-right text-[10px] font-black text-emerald-600">{{ $muHigh }}</span>
+                                                                    </div>
+                                                                </div>
+                                                                {{-- <div class="border-t border-dashed border-slate-200 my-2"></div> --}}
+                                                                {{-- μ_good & μ_bad --}}
+                                                                {{-- <div class="space-y-1">
+                                                                    <div class="flex items-center gap-2">
+                                                                        <span class="w-20 shrink-0 text-[10px] font-bold text-emerald-600">μ_good</span>
+                                                                        <div class="h-1.5 flex-1 rounded-full bg-emerald-100 overflow-hidden">
+                                                                            <div class="h-full bg-emerald-500 rounded-full" style="width:{{ min($detail['mu_good']*100,100) }}%"></div>
+                                                                        </div>
+                                                                        <span class="w-7 text-right text-[10px] font-black text-emerald-600">{{ $detail['mu_good'] }}</span>
+                                                                    </div>
+                                                                    <div class="flex items-center gap-2">
+                                                                        <span class="w-20 shrink-0 text-[10px] font-bold text-rose-500">μ_bad</span>
+                                                                        <div class="h-1.5 flex-1 rounded-full bg-rose-100 overflow-hidden">
+                                                                            <div class="h-full bg-rose-400 rounded-full" style="width:{{ min($detail['mu_bad']*100,100) }}%"></div>
+                                                                        </div>
+                                                                        <span class="w-7 text-right text-[10px] font-black text-rose-500">{{ $detail['mu_bad'] }}</span>
+                                                                    </div>
+                                                                </div> --}}
+                                                            </div>
                                                         @endforeach
                                                     </div>
                                                 </td>

@@ -24,52 +24,64 @@ use Illuminate\Support\Collection;
  */
 class FuzzySelectionService
 {
+    /** @var array<int, array{out: string, cond: array<string, string>}> */
+    private array $rules = [];
+
+    public function __construct()
+    {
+        $this->rules = $this->buildAllRules();
+    }
+
     /**
-     * 15 Rule Fuzzy Tsukamoto (dari tabel rule yang diberikan).
-     * Setiap rule memiliki field 'score' (0–10) yang digunakan sebagai
-     * nilai z tetap: z = score × 10  →  Σ(α·z)/Σα sebagai skor akhir.
+     * Generate semua 243 kombinasi rule (3^5) secara otomatis.
+     * Output ditentukan dari total skor bobot per himpunan.
      *
-     * Scoring per himpunan (konsisten dengan 15 rule):
-     *   Penghasilan : low=2, mid=1, high=0  (inverse)
-     *   Tanggungan  : low=0, mid=1, high=2  (increasing)
-     *   DTKS        : low=2, mid=1, high=0  (inverse)
-     *   Prestasi    : low=0, mid=1, high=2  (increasing)
-     *   Wawancara   : low=0, mid=1, high=2  (increasing)
-     *
-     * @var array<int, array{out: string, score: int, cond: array<string, string>}>
+     * @return array<int, array{out: string, cond: array<string, string>}>
      */
-    private array $rules = [
-        // R1 : Rendah, Banyak, Desil1, Tinggi, SangatBaik → Layak (score=10)
-        ['out' => 'layak', 'score' => 10, 'cond' => ['penghasilan' => 'low', 'tanggungan' => 'high', 'dtks' => 'low', 'prestasi' => 'high', 'wawancara' => 'high']],
-        // R2 : Rendah, Banyak, Desil1, Sedang, Baik → Layak (score=8)
-        ['out' => 'layak', 'score' => 8,  'cond' => ['penghasilan' => 'low', 'tanggungan' => 'high', 'dtks' => 'low', 'prestasi' => 'mid', 'wawancara' => 'mid']],
-        // R3 : Rendah, Sedang, Desil1, Tinggi, Baik → Layak (score=8)
-        ['out' => 'layak', 'score' => 8,  'cond' => ['penghasilan' => 'low', 'tanggungan' => 'mid', 'dtks' => 'low', 'prestasi' => 'high', 'wawancara' => 'mid']],
-        // R4 : Sedang, Banyak, Desil1, Tinggi, Baik → Layak (score=8)
-        ['out' => 'layak', 'score' => 8,  'cond' => ['penghasilan' => 'mid', 'tanggungan' => 'high', 'dtks' => 'low', 'prestasi' => 'high', 'wawancara' => 'mid']],
-        // R5 : Sedang, Sedang, Desil2, Tinggi, SangatBaik → Layak (score=7)
-        ['out' => 'layak', 'score' => 7,  'cond' => ['penghasilan' => 'mid', 'tanggungan' => 'mid', 'dtks' => 'mid', 'prestasi' => 'high', 'wawancara' => 'high']],
-        // R6 : Rendah, Banyak, Desil2, Sedang, SangatBaik → Layak (score=8)
-        ['out' => 'layak', 'score' => 8,  'cond' => ['penghasilan' => 'low', 'tanggungan' => 'high', 'dtks' => 'mid', 'prestasi' => 'mid', 'wawancara' => 'high']],
-        // R7 : Rendah, Sedang, Desil2, Tinggi, Baik → Layak (score=7)
-        ['out' => 'layak', 'score' => 7,  'cond' => ['penghasilan' => 'low', 'tanggungan' => 'mid', 'dtks' => 'mid', 'prestasi' => 'high', 'wawancara' => 'mid']],
-        // R8 : Sedang, Banyak, Desil2, Tinggi, SangatBaik → Layak (score=8)
-        ['out' => 'layak', 'score' => 8,  'cond' => ['penghasilan' => 'mid', 'tanggungan' => 'high', 'dtks' => 'mid', 'prestasi' => 'high', 'wawancara' => 'high']],
-        // R9 : Tinggi, Sedikit, Desil3, Rendah, Kurang → Tidak Layak (score=0)
-        ['out' => 'tidak layak', 'score' => 0, 'cond' => ['penghasilan' => 'high', 'tanggungan' => 'low', 'dtks' => 'high', 'prestasi' => 'low', 'wawancara' => 'low']],
-        // R10: Tinggi, Sedikit, Desil3, Sedang, Kurang → Tidak Layak (score=1)
-        ['out' => 'tidak layak', 'score' => 1, 'cond' => ['penghasilan' => 'high', 'tanggungan' => 'low', 'dtks' => 'high', 'prestasi' => 'mid', 'wawancara' => 'low']],
-        // R11: Tinggi, Sedang, Desil3, Rendah, Kurang → Tidak Layak (score=1)
-        ['out' => 'tidak layak', 'score' => 1, 'cond' => ['penghasilan' => 'high', 'tanggungan' => 'mid', 'dtks' => 'high', 'prestasi' => 'low', 'wawancara' => 'low']],
-        // R12: Sedang, Sedikit, Desil3, Rendah, Kurang → Tidak Layak (score=1)
-        ['out' => 'tidak layak', 'score' => 1, 'cond' => ['penghasilan' => 'mid', 'tanggungan' => 'low', 'dtks' => 'high', 'prestasi' => 'low', 'wawancara' => 'low']],
-        // R13: Tinggi, Sedikit, Desil2, Rendah, Kurang → Tidak Layak (score=1)
-        ['out' => 'tidak layak', 'score' => 1, 'cond' => ['penghasilan' => 'high', 'tanggungan' => 'low', 'dtks' => 'mid', 'prestasi' => 'low', 'wawancara' => 'low']],
-        // R14: Sedang, Sedikit, Desil2, Rendah, Kurang → Tidak Layak (score=2)
-        ['out' => 'tidak layak', 'score' => 2, 'cond' => ['penghasilan' => 'mid', 'tanggungan' => 'low', 'dtks' => 'mid', 'prestasi' => 'low', 'wawancara' => 'low']],
-        // R15: Tinggi, Banyak, Desil1, Tinggi, SangatBaik → Layak (score=8)
-        ['out' => 'layak', 'score' => 8,  'cond' => ['penghasilan' => 'high', 'tanggungan' => 'high', 'dtks' => 'low', 'prestasi' => 'high', 'wawancara' => 'high']],
-    ];
+    private function buildAllRules(): array
+    {
+        // Bobot per himpunan per variabel
+        $scores = [
+            'penghasilan' => ['low' => 2, 'mid' => 1, 'high' => 0],
+            'tanggungan' => ['low' => 0, 'mid' => 1, 'high' => 2],
+            'dtks' => ['low' => 2, 'mid' => 1, 'high' => 0],
+            'prestasi' => ['low' => 0, 'mid' => 1, 'high' => 2],
+            'wawancara' => ['low' => 0, 'mid' => 1, 'high' => 2],
+        ];
+
+        $sets = ['low', 'mid', 'high'];
+        $rules = [];
+
+        foreach ($sets as $p) {
+            foreach ($sets as $t) {
+                foreach ($sets as $d) {
+                    foreach ($sets as $pr) {
+                        foreach ($sets as $w) {
+                            $total = $scores['penghasilan'][$p]
+                                + $scores['tanggungan'][$t]
+                                + $scores['dtks'][$d]
+                                + $scores['prestasi'][$pr]
+                                + $scores['wawancara'][$w];
+
+                            $rules[] = [
+                                'out' => $total >= 5 ? 'layak' : 'tidak layak',
+                                'cond' => [
+                                    'penghasilan' => $p,
+                                    'tanggungan' => $t,
+                                    'dtks' => $d,
+                                    'prestasi' => $pr,
+                                    'wawancara' => $w,
+                                ],
+                                'score' => $total,
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+
+        return $rules;
+    }
 
     public function runBatch(): array
     {

@@ -6,12 +6,12 @@ use App\Models\Selection;
 use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\FromView;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
-use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithDrawings;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class SelectionExport implements FromView, ShouldAutoSize, WithStyles, WithDrawings
+class SelectionExport implements FromView, ShouldAutoSize, WithDrawings, WithStyles
 {
     public function __construct(
         private readonly array $filters = []
@@ -20,11 +20,11 @@ class SelectionExport implements FromView, ShouldAutoSize, WithStyles, WithDrawi
     public function drawings()
     {
         $path = public_path('images/icon/logoft.png');
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             return [];
         }
 
-        $drawing = new Drawing();
+        $drawing = new Drawing;
         $drawing->setName('Logo FT UNSUR');
         $drawing->setDescription('Logo');
         $drawing->setPath($path);
@@ -39,7 +39,12 @@ class SelectionExport implements FromView, ShouldAutoSize, WithStyles, WithDrawi
     public function view(): View
     {
         $data = Selection::query()
-            ->with(['application.student', 'application.scholarship'])
+            ->with([
+                'application.student',
+                'application.scholarship',
+                'application.requirementValues.requirement',
+                'application.interviews.assessments',
+            ])
             ->when($this->filters['search'] ?? null, function ($q, $search) {
                 $q->whereHas('application.student', fn ($qs) => $qs
                     ->where('name', 'like', "%{$search}%")
@@ -67,4 +72,3 @@ class SelectionExport implements FromView, ShouldAutoSize, WithStyles, WithDrawi
         return [];
     }
 }
-
