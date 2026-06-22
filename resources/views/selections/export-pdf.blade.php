@@ -212,6 +212,51 @@
         };
 
         /**
+         * Ekstrak nilai numerik dari string apapun.
+         * Contoh: "Rp. 1.000.000" → 1000000, "1 orang" → 1, "desil 1" → 1, "3,75" → 3.75
+         */
+        $parseNumeric = function ($value) {
+            if ($value === null || $value === '' || $value === '-') {
+                return '-';
+            }
+            $str = trim((string) $value);
+            if (is_numeric($str)) {
+                return $str;
+            }
+            $hasCommaDecimal = (bool) preg_match('/\d,\d{1,2}$/', $str);
+            $cleaned = preg_replace('/[^\d.,]/', '', $str);
+            if ($cleaned === '' || $cleaned === null) {
+                return '-';
+            }
+            $cleaned = trim($cleaned, '.,');
+            if ($cleaned === '') {
+                return '-';
+            }
+            if ($hasCommaDecimal) {
+                $cleaned = str_replace('.', '', $cleaned);
+                $cleaned = str_replace(',', '.', $cleaned);
+            } else {
+                if (preg_match('/^[\d]+[.,]\d{3}$/', $cleaned)) {
+                    $cleaned = preg_replace('/[.,]/', '', $cleaned);
+                } else {
+                    $cleaned = str_replace(',', '', $cleaned);
+                }
+            }
+            $parts = explode('.', $cleaned ?? '');
+            if (count($parts) > 2) {
+                $cleaned = $parts[0] . '.' . implode('', array_slice($parts, 1));
+            }
+            return is_numeric($cleaned) ? $cleaned : '-';
+        };
+
+        /**
+         * Ambil nilai numerik dari requirementValues lalu strip karakter non-numerik.
+         */
+        $getRvNumeric = function ($rvs, string $keyword) use ($getRv, $parseNumeric) {
+            return $parseNumeric($getRv($rvs, $keyword));
+        };
+
+        /**
          * Normalisasi status DTKS:
          *   0 / '' / '-'  → Tidak Terdaftar
          *   1             → Desil 1
@@ -271,12 +316,12 @@
             @forelse($data as $i => $item)
                 @php
                     $rvs         = $item->application?->requirementValues ?? collect();
-                    $penghasilan = $getRv($rvs, 'penghasilan');
-                    $tanggungan  = $getRv($rvs, 'tanggungan');
-                    $dtksRaw     = $getRv($rvs, 'dtks');
-                    $prestasi    = $getRv($rvs, 'prestasi');
+                    $penghasilan = $getRvNumeric($rvs, 'penghasilan');
+                    $tanggungan  = $getRvNumeric($rvs, 'tanggungan');
+                    $dtksRaw     = $getRvNumeric($rvs, 'dtks');
+                    $prestasi    = $getRvNumeric($rvs, 'prestasi');
 
-                    // Format penghasilan sebagai Rupiah jika numerik
+                    // Format penghasilan sebagai Rupiah (nilai sudah bersih numerik)
                     $penghasilanFmt = is_numeric($penghasilan)
                         ? 'Rp ' . number_format((float) $penghasilan, 0, ',', '.')
                         : $penghasilan;
@@ -305,7 +350,7 @@
                     <td class="center">{{ $tanggungan !== '-' ? $tanggungan . ' orang' : '-' }}</td>
                     <td class="center">{{ $dtksLabel($dtksRaw) }}</td>
                     <td class="center">{{ $prestasiLabel($prestasi) }}</td>
-                    <td class="center">{{ $nilaiWawancara }}</td>
+                    <td class="center">{{ $nilaiWawancara }} Poin</td>
                     <td class="center">{{ $displayStatus }}</td>
                     <td class="center">{{ \Carbon\Carbon::parse($item->date)->translatedFormat('d M Y') }}</td>
                 </tr>

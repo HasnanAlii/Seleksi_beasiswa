@@ -118,11 +118,11 @@ class ApplicationController extends Controller
                     'success' => true,
                     'message' => 'Pendaftaran berhasil disimpan',
                     'data' => $application->load(['student', 'scholarship', 'interviews', 'selection']),
-                    'redirect' => route('applications.index'),
+                    'redirect' => route('applications.show', $application),
                 ], 201);
             }
 
-            return redirect()->route('applications.index')->with('success', 'Pendaftaran beasiswa berhasil dikirim.');
+            return redirect()->route('applications.show', $application)->with('success', 'Pendaftaran beasiswa berhasil dikirim.');
         }
 
         // === PENDAFTARAN OLEH ADMIN/STAF (input manual atau mahasiswa baru) ===

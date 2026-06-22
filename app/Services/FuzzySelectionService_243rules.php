@@ -424,19 +424,90 @@ class FuzzySelectionService
     private function extractNumericValue(Collection $requirementValues, string $criteriaKey, string $criteriaName): float
     {
         $rv = $requirementValues->get($criteriaKey);
-        if ($rv && is_numeric($rv->applicant_value)) {
-            return (float) $rv->applicant_value;
+        if ($rv) {
+            $numeric = $this->parseNumericFromString($rv->applicant_value);
+            if ($numeric !== null) {
+                return $numeric;
+            }
         }
 
         foreach ($requirementValues as $key => $rv) {
             if (str_contains($key, $criteriaKey) || str_contains($criteriaKey, $key)) {
-                if (is_numeric($rv->applicant_value)) {
-                    return (float) $rv->applicant_value;
+                $numeric = $this->parseNumericFromString($rv->applicant_value);
+                if ($numeric !== null) {
+                    return $numeric;
                 }
             }
         }
 
         return 0.0;
+    }
+
+    /**
+     * Ekstrak nilai numerik dari string apapun.
+     *
+     * Contoh konversi:
+     *   "Rp. 1.000.000"  → 1000000.0
+     *   "Rp. 100,000"    → 100000.0
+     *   "1 orang"        → 1.0
+     *   "desil 1"        → 1.0
+     *   "1 prestasi"     → 1.0
+     *   "3,75"           → 3.75  (koma desimal)
+     *   "3.75"           → 3.75
+     *   "100000"         → 100000.0
+     *   null / ""        → null
+     */
+    private function parseNumericFromString(mixed $value): ?float
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $str = trim((string) $value);
+
+        // Sudah murni numerik
+        if (is_numeric($str)) {
+            return (float) $str;
+        }
+
+        // Deteksi koma sebagai desimal: "3,75" atau "1.000,50"
+        $hasCommaDecimal = (bool) preg_match('/\d,\d{1,2}$/', $str);
+
+        // Hapus semua karakter selain angka, titik, dan koma
+        $cleaned = preg_replace('/[^\d.,]/', '', $str);
+
+        if ($cleaned === '' || $cleaned === null) {
+            return null;
+        }
+
+        // Hapus titik/koma di awal dan akhir (mis. "Rp.1000000" → ".1000000" → "1000000")
+        $cleaned = trim($cleaned, '.,');
+
+        if ($cleaned === '') {
+            return null;
+        }
+
+        if ($hasCommaDecimal) {
+            // "1.000,50" → hapus titik ribuan, ganti koma → titik
+            $cleaned = str_replace('.', '', $cleaned);
+            $cleaned = str_replace(',', '.', $cleaned);
+        } else {
+            // Cek apakah satu pemisah diikuti tepat 3 digit di akhir (= ribuan)
+            if (preg_match('/^[\d]+[.,]\d{3}$/', $cleaned)) {
+                $cleaned = preg_replace('/[.,]/', '', $cleaned);
+            } else {
+                // Hapus koma (anggap ribuan), pertahankan titik
+                $cleaned = str_replace(',', '', $cleaned);
+            }
+        }
+
+        // Tangani lebih dari satu titik desimal
+        $parts = explode('.', $cleaned ?? '');
+        if (count($parts) > 2) {
+            $cleaned = $parts[0].'.'.implode('', array_slice($parts, 1));
+        }
+
+        return is_numeric($cleaned) ? (float) $cleaned : null;
     }
 
     private function averageInterviewScore(Application $application): float
