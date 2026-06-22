@@ -151,7 +151,6 @@ Route::middleware('auth')->group(function () {
         Route::delete('fuzzy-memberships/{fuzzyMembership}', [FuzzyMembershipController::class, 'destroy'])->name('fuzzy-memberships.destroy');
 
         // --- Manajemen Seleksi (Aksi) ---
-        Route::get('selections/export', [SelectionController::class, 'export'])->name('selections.export');
         Route::post('selections/import-preview', [SelectionController::class, 'importPreview'])->name('selections.import.preview');
         Route::post('selections/import-apply', [SelectionController::class, 'importApply'])->name('selections.import.apply');
         Route::get('selections/fuzzy-preview', [SelectionController::class, 'previewFuzzy'])->name('selections.fuzzy-preview');
@@ -191,11 +190,13 @@ Route::middleware('auth')->group(function () {
     // 4. AKSES KHUSUS (Hasil Seleksi - Kaprodi, WD3, & Staf)
     Route::middleware('role:admin|kaprodi|wakil dekan 3|staf|mahasiswa')->group(function () {
         // beasiswa
+        Route::get('selections/export', [SelectionController::class, 'export'])->name('selections.export');
         Route::get('scholarships', [ScholarshipController::class, 'index'])->name('scholarships.index');
         Route::get('scholarships/{scholarship}', [ScholarshipController::class, 'show'])->name('scholarships.show');
 
         Route::get('selections', [SelectionController::class, 'index'])->name('selections.index');
         Route::get('selections/{selection}', [SelectionController::class, 'show'])->name('selections.show');
+
     });
 
     // 5. AKSES PENDAFTARAN (Mahasiswa)

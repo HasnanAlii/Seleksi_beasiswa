@@ -67,7 +67,13 @@
                             </div>
                             <div>
                                 <div class="text-xs font-semibold text-slate-400 mb-1">Waktu</div>
-                                <div class="text-base font-bold text-slate-800">{{ $interview->schedule->format('H:i') }} WIB</div>
+                                <div class="text-base font-bold text-slate-800">
+                                    {{ $interview->schedule->format('H:i') }} - {{ $interview->schedule->copy()->addMinutes(30)->format('H:i') }} WIB
+                                </div>
+                            </div>
+                            <div class="md:col-span-2">
+                                <div class="text-xs font-semibold text-slate-400 mb-1">Lokasi Wawancara</div>
+                                <div class="text-base font-bold text-slate-800">{{ $interview->location ?? '-' }}</div>
                             </div>
                             <div class="md:col-span-2">
                                 <div class="text-xs font-semibold text-slate-400 mb-1">Catatan</div>
@@ -119,6 +125,7 @@
 
                 {{-- Footer --}}
                 <div class="bg-slate-50 px-8 py-6 border-t border-slate-100 flex justify-between items-center">
+                    @hasrole('admin|staf')
                     <a href="{{ route('interviews.index') }}"
                         class="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-700 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -126,6 +133,7 @@
                         </svg>
                         Kembali
                     </a>
+                    @endhasrole
                     {{-- <a href="{{ route('interviews.edit', $interview->id) }}"
                         class="inline-flex justify-center items-center rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-amber-500/30 hover:bg-amber-600 transition-all transform hover:-translate-y-0.5">
                         Ubah Jadwal

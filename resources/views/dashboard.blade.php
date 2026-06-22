@@ -378,6 +378,7 @@
             </div>
             @endhasrole
 
+            @hasrole('admin|staf|kaprodi')
 
             {{-- Wawancara Belum Dinilai --}}
             @if ($pendingInterviews->count() > 0)
@@ -478,6 +479,7 @@
                     </div>
                 </div>
             @endif
+            @endhasrole
             @hasrole('admin|staf')
 
             {{-- Quick Navigation --}}
