@@ -230,6 +230,15 @@ class SelectionController extends Controller
         $beasiswaIndex = array_search('beasiswa', $headers);
         $tahapIndex = array_search('tahap', $headers);
 
+        // Cari kolom nama mahasiswa ("nama mahasiswa" atau "nama")
+        $namaIndex = false;
+        foreach ($headers as $idx => $h) {
+            if ($h === 'nama mahasiswa' || $h === 'nama') {
+                $namaIndex = $idx;
+                break;
+            }
+        }
+
         // 'status' — exact match (bukan 'status dtks', 'status wawancara', dst)
         $statusIndex = false;
         foreach ($headers as $idx => $h) {
@@ -246,11 +255,18 @@ class SelectionController extends Controller
          */
         $normalizeStatus = fn (string $s): string => match ($s) {
             'tidak layak' => 'tidak diterima',
+            'layak' => 'layak',
+            'diterima' => 'diterima',
+            'tidak diterima' => 'tidak diterima',
             default => $s,
         };
 
-        if ($npmIndex === false || $beasiswaIndex === false || $statusIndex === false) {
-            return back()->with('error', 'Kolom wajib (NPM, Beasiswa, Status) tidak ditemukan di file Excel.');
+        if ($beasiswaIndex === false || $statusIndex === false) {
+            return back()->with('error', 'Kolom wajib (Beasiswa, Status) tidak ditemukan di file Excel.');
+        }
+
+        if ($npmIndex === false && $namaIndex === false) {
+            return back()->with('error', 'Kolom NPM atau Nama Mahasiswa harus ada di file Excel.');
         }
 
         $previewData = [];
@@ -261,20 +277,34 @@ class SelectionController extends Controller
                 continue;
             }
 
-            $npm = trim((string) ($row[$npmIndex] ?? ''));
+            $npm = $npmIndex !== false ? trim((string) ($row[$npmIndex] ?? '')) : '';
+            // Anggap NPM tidak valid jika kosong atau hanya berisi '-'
+            $npmValid = $npm && $npm !== '-';
+            $namaExcel = $namaIndex !== false ? trim((string) ($row[$namaIndex] ?? '')) : '';
             $beasiswa = trim((string) ($row[$beasiswaIndex] ?? ''));
             $rawStatus = strtolower(trim((string) ($row[$statusIndex] ?? '')));
-            $statusExcel = $normalizeStatus($rawStatus);          // nilai internal DB
+            $statusExcel = $normalizeStatus($rawStatus);
             $tahapExcel = $tahapIndex !== false ? trim((string) ($row[$tahapIndex] ?? '')) : null;
 
-            if (! $npm || ! $beasiswa || ! $statusExcel) {
+            if (! $beasiswa || ! $statusExcel) {
                 continue;
             }
 
-            $selection = Selection::with(['application.student', 'application.scholarship'])
-                ->whereHas('application.student', fn ($q) => $q->where('student_number', $npm))
-                ->whereHas('application.scholarship', fn ($q) => $q->where('scholarship_name', $beasiswa))
-                ->first();
+            if (! $npmValid && ! $namaExcel) {
+                continue;
+            }
+
+            // Cari selection: utamakan NPM, fallback ke nama mahasiswa
+            $selectionQuery = Selection::with(['application.student', 'application.scholarship'])
+                ->whereHas('application.scholarship', fn ($q) => $q->where('scholarship_name', $beasiswa));
+
+            if ($npmValid) {
+                $selectionQuery->whereHas('application.student', fn ($q) => $q->where('student_number', $npm));
+            } elseif ($namaExcel) {
+                $selectionQuery->whereHas('application.student', fn ($q) => $q->where('name', 'like', $namaExcel));
+            }
+
+            $selection = $selectionQuery->first();
 
             if ($selection) {
                 // Jika status diterima, tahap otomatis menjadi "Divalidasi Universitas"
