@@ -85,7 +85,7 @@ class ScholarshipTypeController extends Controller
             ->with('success', 'Jenis beasiswa berhasil diperbarui.');
     }
 
-    public function destroy(ScholarshipType $scholarshipType)
+    public function destroy(Request $request, ScholarshipType $scholarshipType)
     {
         $scholarshipType->delete();
 

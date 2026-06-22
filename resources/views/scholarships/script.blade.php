@@ -17,7 +17,7 @@
                 const keyword = this.search.toLowerCase().trim();
                 if (!keyword) return this.items;
                 return this.items.filter((item) =>
-                    [item.scholarship_name, item.scholarship_type]
+                    [item.scholarship_name, item.scholarship_type?.name]
                         .filter(Boolean)
                         .some((v) => String(v).toLowerCase().includes(keyword))
                 );
@@ -39,7 +39,7 @@
             },
             openEditModal(item) {
                 this.editMode = true; this.selectedItem = item;
-                this.form = { scholarship_name: item.scholarship_name ?? '', scholarship_type: item.scholarship_type ?? '', quota: item.quota ?? '', validity_period: item.validity_period ?? '' };
+                this.form = { scholarship_name: item.scholarship_name ?? '', scholarship_type: item.scholarship_type?.name ?? '', quota: item.quota ?? '', validity_period: item.validity_period ?? '' };
                 this.errors = {}; this.modalForm = true;
             },
             openShowModal(item) { this.selectedItem = item; this.modalShow = true; },

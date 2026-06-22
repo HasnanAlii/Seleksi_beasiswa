@@ -35,7 +35,7 @@
                                 </div>
                                 <h3 class="text-2xl font-black leading-tight mb-2">{{ $scholarship->scholarship_name }}</h3>
                                 <span class="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm border border-white/20 rounded-full text-xs font-bold tracking-widest uppercase">
-                                    {{ $scholarship->scholarship_type }}
+                                    {{ $scholarship->scholarshipType?->name ?? '-' }}
                                 </span>
                             </div>
                         </div>

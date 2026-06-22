@@ -8,7 +8,7 @@ class Scholarship extends Model
 {
     protected $fillable = [
         'scholarship_name',
-        'scholarship_type',
+        'scholarship_type_id',
         'quota',
         'validity_period',
     ];
@@ -23,6 +23,11 @@ class Scholarship extends Model
         return [
             'validity_period' => 'date',
         ];
+    }
+
+    public function scholarshipType()
+    {
+        return $this->belongsTo(ScholarshipType::class);
     }
 
     public function announcements()

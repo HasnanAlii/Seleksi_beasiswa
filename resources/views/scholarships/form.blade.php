@@ -70,7 +70,7 @@
                                     id="scholarship_type" 
                                     placeholder="Pilih jenis beasiswa"
                                     :options="$scholarshipTypes->map(fn($type) => ['id' => $type->name, 'name' => $type->name])"
-                                    :value="old('scholarship_type', $scholarship->scholarship_type)"
+                                    :value="old('scholarship_type', $scholarship->scholarshipType?->name)"
                                     :showFooter="false"
                                     x-model="formData.scholarship_type"
                                 />
@@ -177,7 +177,7 @@
                 initialize() {
                     // Load initial from PHP
                     this.formData.scholarship_name = '{{ old('scholarship_name', $scholarship->scholarship_name) }}';
-                    this.formData.scholarship_type = '{{ old('scholarship_type', $scholarship->scholarship_type) }}';
+                    this.formData.scholarship_type = '{{ old('scholarship_type', $scholarship->scholarshipType?->name) }}';
                     this.formData.quota = '{{ old('quota', $scholarship->quota) }}';
                     this.formData.validity_period = '{{ old('validity_period', $scholarship->validity_period ? $scholarship->validity_period->format('Y-m-d') : '') }}';
                     

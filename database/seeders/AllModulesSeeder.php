@@ -10,20 +10,66 @@ class AllModulesSeeder extends Seeder
     public function run(): void
     {
         // ============================================================
+        // 0. SCHOLARSHIP TYPES (Jenis Beasiswa)
+        // ============================================================
+        $scholarshipTypeIds = [];
+        $scholarshipTypes = [
+            ['name' => 'Ekonomi',    'description' => 'Beasiswa berbasis kondisi ekonomi/finansial mahasiswa'],
+            ['name' => 'Prestasi',   'description' => 'Beasiswa berbasis prestasi akademik maupun non-akademik'],
+            ['name' => 'Keagamaan', 'description' => 'Beasiswa berbasis kemampuan atau dedikasi di bidang keagamaan'],
+        ];
+        foreach ($scholarshipTypes as $data) {
+            // Upsert agar tidak duplikat jika seeder dijalankan ulang
+            $existing = DB::table('scholarship_types')->where('name', $data['name'])->first();
+            if ($existing) {
+                $scholarshipTypeIds[$data['name']] = $existing->id;
+            } else {
+                $scholarshipTypeIds[$data['name']] = DB::table('scholarship_types')->insertGetId(array_merge($data, [
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]));
+            }
+        }
+
+        // ============================================================
         // 1. SCHOLARSHIPS
         // ============================================================
         $scholarshipIds = [];
         $scholarships = [
             [
                 'scholarship_name' => 'KIP Kuliah',
-                'scholarship_type' => 'Ekonomi',
+                'scholarship_type_id' => $scholarshipTypeIds['Ekonomi'],
                 'quota' => 100,
                 'validity_period' => '2026-12-31',
             ],
             [
                 'scholarship_name' => 'Beasiswa PEMDA',
-                'scholarship_type' => 'Prestasi',
+                'scholarship_type_id' => $scholarshipTypeIds['Prestasi'],
                 'quota' => 50,
+                'validity_period' => '2026-12-31',
+            ],
+            [
+                'scholarship_name' => 'Beasiswa Yayasan',
+                'scholarship_type_id' => $scholarshipTypeIds['Ekonomi'],
+                'quota' => 30,
+                'validity_period' => '2026-12-31',
+            ],
+            [
+                'scholarship_name' => 'Beasiswa Prestasi Akademik',
+                'scholarship_type_id' => $scholarshipTypeIds['Prestasi'],
+                'quota' => 20,
+                'validity_period' => '2026-12-31',
+            ],
+            [
+                'scholarship_name' => 'Beasiswa Peningkatan Prestasi Akademik (PPA)',
+                'scholarship_type_id' => $scholarshipTypeIds['Prestasi'],
+                'quota' => 40,
+                'validity_period' => '2026-12-31',
+            ],
+            [
+                'scholarship_name' => 'Beasiswa Tahfidz',
+                'scholarship_type_id' => $scholarshipTypeIds['Keagamaan'],
+                'quota' => 15,
                 'validity_period' => '2026-12-31',
             ],
         ];
@@ -198,7 +244,7 @@ class AllModulesSeeder extends Seeder
         foreach ($scholarshipIds as $i => $scholarshipId) {
             DB::table('announcements')->insert([
                 'scholarship_id' => $scholarshipId,
-                'title' => 'Pengumuman Resmi Beasiswa ' . $scholarships[$i]['scholarship_name'],
+                'title' => 'Pengumuman Resmi Beasiswa '.$scholarships[$i]['scholarship_name'],
                 'date' => now()->addDays($i + 30)->toDateString(),
                 'publish_status' => $i % 2 === 0 ? true : false,
                 'created_at' => now(),
@@ -276,30 +322,19 @@ class AllModulesSeeder extends Seeder
         ];
 
         foreach ($membershipData as $membership) {
-
-            // KIP Kuliah
-            DB::table('fuzzy_memberships')->insert([
-                'scholarship_id' => $scholarshipIds[0],
-                'criteria_id' => $membership['criteria_id'],
-                'min_value' => $membership['min_value'],
-                'mid_value' => $membership['mid_value'],
-                'max_value' => $membership['max_value'],
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
-            // PEMDA
-            DB::table('fuzzy_memberships')->insert([
-                'scholarship_id' => $scholarshipIds[1],
-                'criteria_id' => $membership['criteria_id'],
-                'min_value' => $membership['min_value'],
-                'mid_value' => $membership['mid_value'],
-                'max_value' => $membership['max_value'],
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            foreach ($scholarshipIds as $scholarshipId) {
+                DB::table('fuzzy_memberships')->insert([
+                    'scholarship_id' => $scholarshipId,
+                    'criteria_id' => $membership['criteria_id'],
+                    'min_value' => $membership['min_value'],
+                    'mid_value' => $membership['mid_value'],
+                    'max_value' => $membership['max_value'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
         }
 
-        $this->command->info('✅ Seeder berhasil! Data untuk semua modul telah dibuat (5 data per modul).');
+        $this->command->info('✅ Seeder berhasil! '.count($scholarshipIds).' beasiswa dan semua modul telah dibuat.');
     }
 }

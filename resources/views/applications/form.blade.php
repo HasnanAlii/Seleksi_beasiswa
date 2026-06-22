@@ -345,7 +345,7 @@
                                 @enderror
                             </div>
                             
-                            @hasrole('admin')
+                            @hasrole('admin|staf')
                             {{-- Status --}}
                             <div>
                                 <label for="status" class="block text-sm font-semibold text-slate-700 mb-2">Status <span class="text-rose-500">*</span></label>

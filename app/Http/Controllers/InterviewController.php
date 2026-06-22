@@ -58,6 +58,7 @@ class InterviewController extends Controller
             'time_start' => 'required|date_format:H:i',
             'time_end' => 'required|date_format:H:i|after:time_start',
             'duration_minutes' => 'required|integer|min:15|max:480',
+            'location' => 'nullable|string|max:255',
         ]);
 
         $applicationsQuery = Application::with('student', 'scholarship')
@@ -129,6 +130,7 @@ class InterviewController extends Controller
             Interview::create([
                 'application_id' => $applications[$i]->id,
                 'schedule' => $slots[$i],
+                'location' => $validated['location'] ?? null,
             ]);
         }
 
@@ -213,6 +215,7 @@ class InterviewController extends Controller
         return [
             'application_id' => 'required|integer|exists:applications,id',
             'schedule' => 'required|date',
+            'location' => 'nullable|string|max:255',
             'description' => 'nullable|string',
         ];
     }

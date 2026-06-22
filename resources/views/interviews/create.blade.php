@@ -138,6 +138,20 @@
                                 @enderror
                             </div>
 
+                            {{-- Lokasi Wawancara --}}
+                            <div>
+                                <label for="location" class="block text-sm font-semibold text-slate-700 mb-2">
+                                    Lokasi Wawancara
+                                </label>
+                                <input type="text" id="location" name="location"
+                                    value="{{ old('location') }}"
+                                    class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('location') border-rose-500 @enderror"
+                                    placeholder="Masukan lokasi wawancara">
+                                @error('location')
+                                    <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
+                                @enderror
+                            </div>
+
                             {{-- Slot Preview (Alpine.js) --}}
                             {{-- <div x-data="slotPreview()" x-init="init()" class="bg-slate-50 rounded-2xl p-5 border border-slate-200">
                                 <p class="text-sm font-semibold text-slate-700 mb-3">Estimasi Slot Wawancara</p>

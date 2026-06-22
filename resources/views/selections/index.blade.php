@@ -414,9 +414,19 @@
                                                     {{ \Carbon\Carbon::parse($item->date)->translatedFormat('d M Y') }}
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-center">
-                                                    <div class="relative flex justify-center" x-data="{ open: false, top: 0, left: 0, toggle(el) { this.open = !this.open; if (this.open) { const r = el.getBoundingClientRect();
+                                                    <div class="relative flex justify-center" x-data="{
+                                                        open: false,
+                                                        top: 0,
+                                                        left: 0,
+                                                        toggle(el) {
+                                                            this.open = !this.open;
+                                                            if (this.open) {
+                                                                const r = el.getBoundingClientRect();
                                                                 this.top = r.bottom + window.scrollY + 4;
-                                                                this.left = r.right + window.scrollX - 144; } } }">
+                                                                this.left = r.right + window.scrollX - 144;
+                                                            }
+                                                        }
+                                                    }">
 
                                                         <button @click="toggle($el)"
                                                             class="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-all">

@@ -50,8 +50,8 @@
                                     <label for="filter_search"
                                         class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">Pencarian</label>
                                     <div class="relative group">
-                                        <input type="text" id="filter_search" name="search" value="{{ $filters['search'] ?? '' }}"
-                                            placeholder="Cari judul berita..."
+                                        <input type="text" id="filter_search" name="search"
+                                            value="{{ $filters['search'] ?? '' }}" placeholder="Cari judul berita..."
                                             class="w-full rounded-xl border border-slate-200 bg-white px-4 py-[7px] pr-10 text-[13px] font-bold focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm min-h-[38px] text-slate-600"
                                             @input.debounce.500ms="$el.closest('form').submit()">
                                         <div
@@ -132,8 +132,9 @@
                                                     class="px-6 py-4 whitespace-nowrap text-center text-sm text-slate-500">
                                                     {{ $item->created_at->translatedFormat('d M Y') }}</td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-center">
-                                                    <div class="relative flex justify-center"
-                                                         x-data="{ open:false, top:0, left:0, toggle(el){ this.open=!this.open; if(this.open){ const r=el.getBoundingClientRect(); this.top=r.bottom+window.scrollY+4; this.left=r.right+window.scrollX-144; } } }">
+                                                    <div class="relative flex justify-center" x-data="{ open: false, top: 0, left: 0, toggle(el) { this.open = !this.open; if (this.open) { const r = el.getBoundingClientRect();
+                                                                this.top = r.bottom + window.scrollY + 4;
+                                                                this.left = r.right + window.scrollX - 144; } } }">
                                                         <button @click="toggle($el)"
                                                             class="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-all">
                                                             <svg width="3" height="15" viewBox="0 0 3 15"
@@ -143,15 +144,15 @@
                                                                     fill="#555555" />
                                                             </svg>
                                                         </button>
-                                                        <div x-show="open"
-                                                            @click.outside="open=false"
+                                                        <div x-show="open" @click.outside="open=false"
                                                             x-transition:enter="transition ease-out duration-150"
                                                             x-transition:enter-start="opacity-0 scale-95"
                                                             x-transition:enter-end="opacity-100 scale-100"
                                                             x-transition:leave="transition ease-in duration-100"
                                                             x-transition:leave-start="opacity-100 scale-100"
                                                             x-transition:leave-end="opacity-0 scale-95"
-                                                            :style="'position:fixed;z-index:9999;width:144px;top:'+top+'px;left:'+left+'px'"
+                                                            :style="'position:fixed;z-index:9999;width:144px;top:' + top +
+                                                                'px;left:' + left + 'px'"
                                                             class="rounded-xl bg-white shadow-xl border border-slate-100 overflow-hidden origin-top-right"
                                                             style="display:none;">
                                                             <a href="{{ route('news.show', $item->id) }}"

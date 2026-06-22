@@ -73,8 +73,8 @@ class FuzzySelectionService
 
     public function runBatch(): array
     {
-        $finalStatuses = ['layak', 'diterima', 'tidak diterima'];
-        $selectionIds = Selection::whereNotIn('status', $finalStatuses)->pluck('application_id');
+        $selectionIds = Selection::where('status', 'siap di proses')
+            ->pluck('application_id');
 
         $applications = Application::with([
             'student',

@@ -208,19 +208,19 @@
                                                     @endif
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-center">
-                                                    <div class="relative flex justify-center"
-                                                         x-data="{
-                                                            open: false,
-                                                            top: 0, left: 0,
-                                                            toggle(el) {
-                                                                this.open = !this.open;
-                                                                if (this.open) {
-                                                                    const r = el.getBoundingClientRect();
-                                                                    this.top = r.bottom + window.scrollY + 4;
-                                                                    this.left = r.right + window.scrollX - 144;
-                                                                }
+                                                    <div class="relative flex justify-center" x-data="{
+                                                        open: false,
+                                                        top: 0,
+                                                        left: 0,
+                                                        toggle(el) {
+                                                            this.open = !this.open;
+                                                            if (this.open) {
+                                                                const r = el.getBoundingClientRect();
+                                                                this.top = r.bottom + window.scrollY + 4;
+                                                                this.left = r.right + window.scrollX - 144;
                                                             }
-                                                         }">
+                                                        }
+                                                    }">
                                                         <button @click="toggle($el)"
                                                             class="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-all">
                                                             <svg width="3" height="15" viewBox="0 0 3 15"
@@ -230,36 +230,40 @@
                                                                     fill="#555555" />
                                                             </svg>
                                                         </button>
-                                                        <div x-show="open"
-                                                            @click.outside="open = false"
+                                                        <div x-show="open" @click.outside="open = false"
                                                             x-transition:enter="transition ease-out duration-150"
                                                             x-transition:enter-start="opacity-0 scale-95"
                                                             x-transition:enter-end="opacity-100 scale-100"
                                                             x-transition:leave="transition ease-in duration-100"
                                                             x-transition:leave-start="opacity-100 scale-100"
                                                             x-transition:leave-end="opacity-0 scale-95"
-                                                            :style="'position:fixed;z-index:9999;width:144px;top:'+top+'px;left:'+left+'px'"
+                                                            :style="'position:fixed;z-index:9999;width:144px;top:' + top +
+                                                                'px;left:' + left + 'px'"
                                                             class="rounded-xl bg-white shadow-xl border border-slate-100 overflow-hidden origin-top-right"
                                                             style="display:none;">
                                                             <a href="{{ route('applications.show', $item->id) }}"
                                                                 class="w-full block px-4 py-2.5 text-sm text-left font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
                                                                 Detail
                                                             </a>
-                                                            <a href="{{ route('applications.edit', $item->id) }}"
-                                                                class="w-full block px-4 py-2.5 text-sm text-left font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
-                                                                Validasi
-                                                            </a>
-                                                            <form
-                                                                action="{{ route('applications.destroy', $item->id) }}"
-                                                                method="POST"
-                                                                data-confirm-message="Yakin ingin menghapus pendaftaran ini? Tindakan ini tidak dapat dibatalkan.">
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <button type="submit"
-                                                                    class="w-full text-left px-4 py-2.5 text-sm font-semibold text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition-colors">
-                                                                    Hapus
-                                                                </button>
-                                                            </form>
+
+                                                            @hasrole('admin|staf')
+                                                                <a href="{{ route('applications.edit', $item->id) }}"
+                                                                    class="w-full block px-4 py-2.5 text-sm text-left font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+                                                                    Validasi
+                                                                </a>
+                                                                <form
+                                                                    action="{{ route('applications.destroy', $item->id) }}"
+                                                                    method="POST"
+                                                                    data-confirm-message="Yakin ingin menghapus pendaftaran ini? Tindakan ini tidak dapat dibatalkan.">
+                                                                    @csrf
+                                                                    @method('DELETE')
+                                                                    <button type="submit"
+                                                                        class="w-full text-left px-4 py-2.5 text-sm font-semibold text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition-colors">
+                                                                        Hapus
+                                                                    </button>
+                                                                </form>
+                                                            @endhasrole
+
                                                         </div>
                                                     </div>
                                                 </td>

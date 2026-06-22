@@ -29,39 +29,39 @@
                             </div>
                             <div class="flex gap-3">
                                 @hasrole('mahasiswa')
-                                <a href="{{ route('applications.create') }}"
-                                    class="group inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white text-sm font-semibold rounded-2xl shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:shadow-blue-600/40 transition-all duration-300 transform hover:-translate-y-0.5">
-                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                        class="h-5 w-5 transition-transform group-hover:rotate-90" viewBox="0 0 20 20"
-                                        fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                    Daftar Beasiswa
-                                </a>
+                                    <a href="{{ route('applications.create') }}"
+                                        class="group inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white text-sm font-semibold rounded-2xl shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:shadow-blue-600/40 transition-all duration-300 transform hover:-translate-y-0.5">
+                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                            class="h-5 w-5 transition-transform group-hover:rotate-90" viewBox="0 0 20 20"
+                                            fill="currentColor">
+                                            <path fill-rule="evenodd"
+                                                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                        Daftar Beasiswa
+                                    </a>
                                 @endhasrole
                                 @hasrole('admin|staf')
-                                <a href="{{ route('scholarship-types.index') }}"
-                                    class="group inline-flex items-center gap-2 px-6 py-3 bg-white text-slate-700 text-sm font-semibold rounded-2xl shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 hover:text-slate-900 transition-all duration-300 transform hover:-translate-y-0.5">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-500"
-                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                                    </svg>
-                                    Jenis Beasiswa
-                                </a>
-                                <a href="{{ route('scholarships.create') }}"
-                                    class="group inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white text-sm font-semibold rounded-2xl shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:shadow-blue-600/40 transition-all duration-300 transform hover:-translate-y-0.5">
-                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                        class="h-5 w-5 transition-transform group-hover:rotate-90" viewBox="0 0 20 20"
-                                        fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                    Tambah Data
-                                </a>
+                                    <a href="{{ route('scholarship-types.index') }}"
+                                        class="group inline-flex items-center gap-2 px-6 py-3 bg-white text-slate-700 text-sm font-semibold rounded-2xl shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 hover:text-slate-900 transition-all duration-300 transform hover:-translate-y-0.5">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-500"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                                        </svg>
+                                        Jenis Beasiswa
+                                    </a>
+                                    <a href="{{ route('scholarships.create') }}"
+                                        class="group inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white text-sm font-semibold rounded-2xl shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:shadow-blue-600/40 transition-all duration-300 transform hover:-translate-y-0.5">
+                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                            class="h-5 w-5 transition-transform group-hover:rotate-90" viewBox="0 0 20 20"
+                                            fill="currentColor">
+                                            <path fill-rule="evenodd"
+                                                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                        Tambah Data
+                                    </a>
                                 @endhasrole
                             </div>
                         </div>
@@ -77,8 +77,7 @@
                                         class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">Pencarian</label>
                                     <div class="relative group">
                                         <input type="text" id="filter_search" name="search"
-                                            value="{{ $filters['search'] ?? '' }}"
-                                            placeholder="Cari nama beasiswa..."
+                                            value="{{ $filters['search'] ?? '' }}" placeholder="Cari nama beasiswa..."
                                             class="w-full rounded-xl border border-slate-200 bg-white px-4 py-[7px] pr-10 text-[13px] font-bold focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm min-h-[38px] text-slate-600"
                                             @input.debounce.500ms="$el.closest('form').submit()">
                                         <div
@@ -96,34 +95,22 @@
                                 <div class="flex flex-col xl:col-span-3">
                                     <label for="filter_type"
                                         class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">Tipe</label>
-                                    <x-searchable-dropdown 
-                                        name="type" 
-                                        id="filter_type" 
-                                        placeholder="Semua Tipe"
-                                        :options="$scholarshipTypes->map(fn($t) => ['id' => $t->name, 'name' => $t->name])->prepend(['id' => '', 'name' => 'Semua Tipe'])"
-                                        :value="$filters['type'] ?? ''"
-                                        :showFooter="false"
-                                        compact
-                                    />
+                                    <x-searchable-dropdown name="type" id="filter_type" placeholder="Semua Tipe"
+                                        :options="$scholarshipTypes
+                                            ->map(fn($t) => ['id' => $t->name, 'name' => $t->name])
+                                            ->prepend(['id' => '', 'name' => 'Semua Tipe'])" :value="$filters['type'] ?? ''" :showFooter="false" compact />
                                 </div>
 
                                 <!-- Status -->
                                 <div class="flex flex-col xl:col-span-3">
                                     <label for="filter_status"
                                         class="mb-1.5 block text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">Status</label>
-                                    <x-searchable-dropdown 
-                                        name="status" 
-                                        id="filter_status" 
-                                        placeholder="Semua Status"
+                                    <x-searchable-dropdown name="status" id="filter_status" placeholder="Semua Status"
                                         :options="collect([
                                             ['id' => '', 'name' => 'Semua Status'],
                                             ['id' => 'aktif', 'name' => 'Aktif'],
                                             ['id' => 'berakhir', 'name' => 'Berakhir'],
-                                        ])"
-                                        :value="$filters['status'] ?? ''"
-                                        :showFooter="false"
-                                        compact
-                                    />
+                                        ])" :value="$filters['status'] ?? ''" :showFooter="false" compact />
                                 </div>
 
                                 <!-- Terapkan -->
@@ -177,7 +164,7 @@
                                                     {{ $item->scholarship_name }}</td>
                                                 <td
                                                     class="px-6 py-4 text-left text-sm text-slate-500 max-w-md truncate">
-                                                    {{ $item->scholarship_type }}</td>
+                                                    {{ $item->scholarshipType?->name ?? '-' }}</td>
                                                 <td
                                                     class="px-6 py-4 text-left text-sm text-slate-500 max-w-md truncate">
                                                     {{ $item->quota }} Orang</td>
@@ -191,8 +178,9 @@
                                                             class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-rose-50 text-rose-600 border border-rose-100/50">
                                                             <div
                                                                 class="flex items-center justify-center w-5 h-5 rounded-full bg-rose-500 text-white">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3"
-                                                                    viewBox="0 0 20 20" fill="currentColor">
+                                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                                    class="h-3 w-3" viewBox="0 0 20 20"
+                                                                    fill="currentColor">
                                                                     <path fill-rule="evenodd"
                                                                         d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
                                                                         clip-rule="evenodd" />
@@ -205,8 +193,9 @@
                                                             class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-100/50">
                                                             <div
                                                                 class="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500 text-white">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3"
-                                                                    viewBox="0 0 20 20" fill="currentColor">
+                                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                                    class="h-3 w-3" viewBox="0 0 20 20"
+                                                                    fill="currentColor">
                                                                     <path fill-rule="evenodd"
                                                                         d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
                                                                         clip-rule="evenodd" />
@@ -217,8 +206,9 @@
                                                     @endif
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-center">
-                                                    <div class="relative flex justify-center"
-                                                         x-data="{ open:false, top:0, left:0, toggle(el){ this.open=!this.open; if(this.open){ const r=el.getBoundingClientRect(); this.top=r.bottom+window.scrollY+4; this.left=r.right+window.scrollX-144; } } }">
+                                                    <div class="relative flex justify-center" x-data="{ open: false, top: 0, left: 0, toggle(el) { this.open = !this.open; if (this.open) { const r = el.getBoundingClientRect();
+                                                                this.top = r.bottom + window.scrollY + 4;
+                                                                this.left = r.right + window.scrollX - 144; } } }">
                                                         <button @click="toggle($el)"
                                                             class="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-all">
                                                             <svg width="3" height="15" viewBox="0 0 3 15"
@@ -228,15 +218,15 @@
                                                                     fill="#555555" />
                                                             </svg>
                                                         </button>
-                                                        <div x-show="open"
-                                                            @click.outside="open=false"
+                                                        <div x-show="open" @click.outside="open=false"
                                                             x-transition:enter="transition ease-out duration-150"
                                                             x-transition:enter-start="opacity-0 scale-95"
                                                             x-transition:enter-end="opacity-100 scale-100"
                                                             x-transition:leave="transition ease-in duration-100"
                                                             x-transition:leave-start="opacity-100 scale-100"
                                                             x-transition:leave-end="opacity-0 scale-95"
-                                                            :style="'position:fixed;z-index:9999;width:144px;top:'+top+'px;left:'+left+'px'"
+                                                            :style="'position:fixed;z-index:9999;width:144px;top:' + top +
+                                                                'px;left:' + left + 'px'"
                                                             class="rounded-xl bg-white shadow-xl border border-slate-100 overflow-hidden origin-top-right"
                                                             style="display:none;">
                                                             <a href="{{ route('scholarships.show', $item->id) }}"
@@ -244,20 +234,20 @@
                                                                 Detail
                                                             </a>
                                                             @hasrole('admin|staf')
-                                                            <a href="{{ route('scholarships.edit', $item->id) }}"
-                                                                class="w-full block px-4 py-2.5 text-sm text-left font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
-                                                                Ubah
-                                                            </a>
-                                                            <form
-                                                            action="{{ route('scholarships.destroy', $item->id) }}"
-                                                            method="POST">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit"
-                                                            class="w-full text-left px-4 py-2.5 text-sm font-semibold text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition-colors">
-                                                            Hapus
-                                                            </button>
-                                                            </form>
+                                                                <a href="{{ route('scholarships.edit', $item->id) }}"
+                                                                    class="w-full block px-4 py-2.5 text-sm text-left font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+                                                                    Ubah
+                                                                </a>
+                                                                <form
+                                                                    action="{{ route('scholarships.destroy', $item->id) }}"
+                                                                    method="POST">
+                                                                    @csrf
+                                                                    @method('DELETE')
+                                                                    <button type="submit"
+                                                                        class="w-full text-left px-4 py-2.5 text-sm font-semibold text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition-colors">
+                                                                        Hapus
+                                                                    </button>
+                                                                </form>
                                                             @endhasrole
                                                         </div>
                                                     </div>

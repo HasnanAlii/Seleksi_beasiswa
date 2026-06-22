@@ -73,6 +73,18 @@
                                 @enderror
                             </div>
 
+                            {{-- Lokasi --}}
+                            <div>
+                                <label for="location" class="block text-sm font-semibold text-slate-700 mb-2">Lokasi Wawancara</label>
+                                <input type="text" id="location" name="location"
+                                    x-model="formData.location"
+                                    class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('location') border-rose-500 @enderror"
+                                    placeholder="Contoh: Ruang Rapat Dekanat, Online Zoom, dll.">
+                                @error('location')
+                                    <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
+                                @enderror
+                            </div>
+
                             {{-- Description --}}
                             <div>
                                 <label for="description" class="block text-sm font-semibold text-slate-700 mb-2">Catatan / Keterangan</label>
@@ -110,6 +122,7 @@
                 formData: {
                     application_id: '',
                     schedule: '',
+                    location: '',
                     description: ''
                 },
 
@@ -117,6 +130,7 @@
                     // Load initial from PHP
                     this.formData.application_id = '{{ old('application_id', $interview->application_id) }}';
                     this.formData.schedule = '{{ old('schedule', $interview->schedule ? $interview->schedule->format('Y-m-d\TH:i') : '') }}';
+                    this.formData.location = '{{ old('location', $interview->location) }}';
                     this.formData.description = '{{ str_replace(["\r", "\n"], ['\r', '\n'], old('description', $interview->description)) }}';
 
                     // Restore from LocalStorage

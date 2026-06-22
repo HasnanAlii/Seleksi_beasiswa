@@ -20,12 +20,17 @@ class ScholarshipController extends Controller
         ];
 
         $query = Scholarship::query()
+            ->with('scholarshipType')
             ->when($filters['search'], function ($q, $search) {
                 return $q->where('scholarship_name', 'like', "%{$search}%")
-                    ->orWhere('scholarship_type', 'like', "%{$search}%");
+                    ->orWhereHas('scholarshipType', function ($subQuery) use ($search) {
+                        $subQuery->where('name', 'like', "%{$search}%");
+                    });
             })
             ->when($filters['type'], function ($q, $type) {
-                return $q->where('scholarship_type', $type);
+                return $q->whereHas('scholarshipType', function ($subQuery) use ($type) {
+                    $subQuery->where('name', $type);
+                });
             })
             ->when($filters['status'], function ($q, $status) {
                 if ($status === 'aktif') {
@@ -64,9 +69,11 @@ class ScholarshipController extends Controller
     {
         $validated = $request->validate($this->rules());
         $scholarship = DB::transaction(function () use ($validated) {
+            $scholarshipType = ScholarshipType::where('name', $validated['scholarship_type'])->firstOrFail();
+
             $scholarship = Scholarship::create([
                 'scholarship_name' => $validated['scholarship_name'],
-                'scholarship_type' => $validated['scholarship_type'],
+                'scholarship_type_id' => $scholarshipType->id,
                 'quota' => $validated['quota'],
                 'validity_period' => $validated['validity_period'],
             ]);
@@ -137,9 +144,11 @@ class ScholarshipController extends Controller
     {
         $validated = $request->validate($this->rules());
         DB::transaction(function () use ($validated, $scholarship) {
+            $scholarshipType = ScholarshipType::where('name', $validated['scholarship_type'])->firstOrFail();
+
             $scholarship->update([
                 'scholarship_name' => $validated['scholarship_name'],
-                'scholarship_type' => $validated['scholarship_type'],
+                'scholarship_type_id' => $scholarshipType->id,
                 'quota' => $validated['quota'],
                 'validity_period' => $validated['validity_period'],
             ]);
