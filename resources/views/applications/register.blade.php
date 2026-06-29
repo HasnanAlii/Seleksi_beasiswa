@@ -148,10 +148,19 @@
 
                                     <div>
                                         <label class="block text-sm font-semibold text-slate-700 mb-2">Program Studi <span class="text-rose-500">*</span></label>
-                                        <input type="text" name="new_student_study_program" required
+                                        <x-searchable-dropdown 
+                                            name="new_student_study_program" 
+                                            id="new_student_study_program" 
+                                            placeholder="Pilih Program Studi"
+                                            :options="[
+                                                ['id' => 'Teknik Informatika', 'name' => 'Teknik Informatika'],
+                                                ['id' => 'Teknik Sipil', 'name' => 'Teknik Sipil'],
+                                                ['id' => 'Teknik Industri', 'name' => 'Teknik Industri'],
+                                            ]"
+                                            :value="old('new_student_study_program', $application->exists ? $application->student->study_program : '')"
+                                            :showFooter="false"
                                             x-model="formData.new_student_study_program"
-                                            placeholder="Masukkan program studi"
-                                            class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all @error('new_student_study_program') border-rose-500 @enderror">
+                                        />
                                         @error('new_student_study_program')
                                             <p class="mt-2 text-sm text-rose-500">{{ $message }}</p>
                                         @enderror
@@ -251,75 +260,83 @@
                                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 {{-- Nilai Data Pendaftar --}}
                                                 <div>
-                                                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2"> Data Pendaftar</label>
+                                                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2"> Data Pendaftar <span class="text-rose-500">*</span></label>
                                                     <input type="text"
                                                         :name="`requirement_values[${index}][applicant_value]`"
                                                         x-model="valuesByRequirement[requirement.requirement_id]"
                                                         placeholder="Masukkan data pendaftar"
+                                                        required
                                                         class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all">
                                                 </div>
 
-                                                {{-- Upload Dokumen --}}
-                                                <div
-                                                    x-data="{
-                                                        fileName: null,
-                                                        fileSize: null,
-                                                        isDragging: false,
-                                                        handleFile(file) {
-                                                            if (!file) return;
-                                                            this.fileName = file.name;
-                                                            this.fileSize = (file.size / 1024).toFixed(1) + ' KB';
-                                                        }
-                                                    }"
-                                                >
-                                                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Upload Dokumen</label>
+                                                {{-- Upload Multi Dokumen --}}
+                                                <div x-data="documentUploadComponent(requirement.requirement_id)">
+                                                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                                                        Upload Dokumen
+                                                        <span class="ml-1 text-blue-400 normal-case font-semibold">(bisa lebih dari 1)</span>
+                                                    </label>
+
+                                                    {{-- Drop zone --}}
                                                     <label
                                                         :for="`doc_upload_${requirement.requirement_id}`"
                                                         @dragover.prevent="isDragging = true"
                                                         @dragleave.prevent="isDragging = false"
-                                                        @drop.prevent="isDragging = false; handleFile($event.dataTransfer.files[0]);"
+                                                        @drop.prevent="isDragging = false; addFiles($event.dataTransfer.files);"
                                                         :class="isDragging ? 'border-blue-400 bg-blue-50' : 'border-slate-200 bg-white hover:border-blue-300 hover:bg-blue-50/30'"
                                                         class="flex flex-col items-center justify-center gap-2 w-full rounded-xl border-2 border-dashed px-4 py-4 cursor-pointer transition-all duration-200 group"
                                                     >
-                                                        <template x-if="!fileName">
-                                                            <div class="flex flex-col items-center gap-1.5 text-center">
-                                                                <div class="p-2 bg-slate-100 rounded-lg group-hover:bg-blue-100 transition-colors">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 group-hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                                                                    </svg>
-                                                                </div>
-                                                                <p class="text-xs text-slate-400 group-hover:text-blue-500 font-semibold transition-colors">Klik atau seret file</p>
-                                                                <p class="text-[10px] text-slate-300">PDF, JPG, PNG, DOC — maks 5 MB</p>
+                                                        <div class="flex flex-col items-center gap-1.5 text-center">
+                                                            <div class="p-2 bg-slate-100 rounded-lg group-hover:bg-blue-100 transition-colors">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 group-hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                                                </svg>
                                                             </div>
-                                                        </template>
-                                                        <template x-if="fileName">
-                                                            <div class="flex items-center gap-2.5 w-full">
-                                                                <div class="p-2 bg-blue-100 rounded-lg shrink-0">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                                    </svg>
-                                                                </div>
-                                                                <div class="flex-1 min-w-0">
-                                                                    <p class="text-xs font-bold text-slate-700 truncate" x-text="fileName"></p>
-                                                                    <p class="text-[10px] text-slate-400" x-text="fileSize"></p>
-                                                                </div>
-                                                                <button type="button" @click.prevent="fileName = null; fileSize = null; $refs['doc_' + requirement.requirement_id].value = ''" class="p-1 hover:bg-rose-50 rounded-lg transition-colors">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-slate-400 hover:text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                                                    </svg>
-                                                                </button>
-                                                            </div>
-                                                        </template>
+                                                            <p class="text-xs text-slate-400 group-hover:text-blue-500 font-semibold transition-colors">Klik atau seret file</p>
+                                                            <p class="text-[10px] text-slate-300">PDF, JPG, PNG, DOC — maks 5 MB per file</p>
+                                                        </div>
                                                         <input
                                                             type="file"
                                                             :id="`doc_upload_${requirement.requirement_id}`"
-                                                            :name="`requirement_documents[${requirement.requirement_id}]`"
+                                                            :name="`requirement_documents[${requirement.requirement_id}][]`"
                                                             accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                                                             class="sr-only"
-                                                            x-ref="'doc_' + requirement.requirement_id"
-                                                            @change="handleFile($event.target.files[0])"
+                                                            multiple
+                                                            @click="$el.value = ''"
+                                                            @change="addFiles($event.target.files)"
                                                         >
                                                     </label>
+
+                                                    {{-- Daftar file yang telah ditambahkan --}}
+                                                    <template x-if="files.length > 0">
+                                                        <div class="mt-2 space-y-1.5">
+                                                            <template x-for="(f, fi) in files" :key="f.id">
+                                                                <div class="flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 group/item">
+                                                                    <div class="p-1.5 bg-blue-100 rounded-md shrink-0">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                                        </svg>
+                                                                    </div>
+                                                                    <div class="flex-1 min-w-0">
+                                                                        <p class="text-xs font-bold text-slate-700 truncate" x-text="f.name"></p>
+                                                                        <p class="text-[10px] text-slate-400" x-text="f.size"></p>
+                                                                    </div>
+                                                                    <button
+                                                                        type="button"
+                                                                        @click.prevent="removeFile(f.id)"
+                                                                        class="p-1 hover:bg-rose-100 rounded-md transition-colors opacity-0 group-hover/item:opacity-100"
+                                                                        title="Hapus dokumen"
+                                                                    >
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                                        </svg>
+                                                                    </button>
+                                                                </div>
+                                                            </template>
+
+                                                            {{-- Counter badge --}}
+                                                            <p class="text-[10px] text-slate-400 text-right font-semibold" x-text="`${files.length} file dipilih`"></p>
+                                                        </div>
+                                                    </template>
                                                 </div>
                                             </div>
                                         </div>
@@ -390,6 +407,42 @@
     </div>
 
     <script>
+        function documentUploadComponent(requirementId) {
+            return {
+                files: [],
+                isDragging: false,
+                addFiles(fileList) {
+                    Array.from(fileList).forEach(file => {
+                        const maxSize = 5 * 1024 * 1024;
+                        if (file.size > maxSize) {
+                            alert('File "' + file.name + '" melebihi batas 5 MB.');
+                            return;
+                        }
+                        this.files.push({
+                            id: Date.now() + Math.random(),
+                            name: file.name,
+                            size: (file.size / 1024).toFixed(1) + ' KB',
+                            file: file,
+                        });
+                    });
+                    this.syncHiddenInputs();
+                },
+                removeFile(id) {
+                    this.files = this.files.filter(f => f.id !== id);
+                    this.syncHiddenInputs();
+                },
+                syncHiddenInputs() {
+                    const dt = new DataTransfer();
+                    this.files.forEach(f => dt.items.add(f.file));
+                    // Safely query the input inside this component
+                    const inputEl = this.$el.querySelector('input[type="file"]');
+                    if (inputEl) {
+                        inputEl.files = dt.files;
+                    }
+                }
+            };
+        }
+
         function applicationRequirementForm({ selectedScholarshipId, scholarshipRequirements, existingRequirementValues }) {
             const STORAGE_KEY = 'scholarship_application_draft';
 

@@ -90,6 +90,7 @@ class SelectionController extends Controller
             'application.student',
             'application.scholarship.requirements.requirement',
             'application.requirementValues.requirement',
+            'application.requirementValues.documents',
             'application.interviews.assessments',
         ]);
 

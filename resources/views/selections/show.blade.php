@@ -119,18 +119,35 @@
                                             </td>
                                             {{-- Kolom Dokumen --}}
                                             <td class="px-6 py-4 text-sm">
-                                                @if($val && $val->document_path)
+                                                @php
+                                                    $docs = $val ? $val->documents : collect();
+                                                @endphp
+                                                @if($docs->isNotEmpty())
+                                                    <div class="flex flex-col gap-1.5">
+                                                        @foreach($docs as $doc)
+                                                            <a href="{{ Storage::url($doc->document_path) }}"
+                                                                target="_blank"
+                                                                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-100 text-blue-700 hover:bg-blue-100 hover:border-blue-200 transition-all font-semibold text-xs group"
+                                                                title="{{ $doc->original_name }}">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                                </svg>
+                                                                <span class="max-w-[120px] truncate">{{ $doc->original_name ?? basename($doc->document_path) }}</span>
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                                </svg>
+                                                            </a>
+                                                        @endforeach
+                                                    </div>
+                                                @elseif($val && $val->document_path)
+                                                    {{-- Fallback: data lama yang masih pakai document_path --}}
                                                     <a href="{{ Storage::url($val->document_path) }}"
                                                         target="_blank"
-                                                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-100 text-blue-700 hover:bg-blue-100 hover:border-blue-200 transition-all font-semibold text-xs group"
-                                                        title="{{ basename($val->document_path) }}">
+                                                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-100 text-blue-700 hover:bg-blue-100 hover:border-blue-200 transition-all font-semibold text-xs group">
                                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                         </svg>
                                                         <span class="max-w-[120px] truncate">{{ basename($val->document_path) }}</span>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                                        </svg>
                                                     </a>
                                                 @else
                                                     <span class="text-slate-300 text-xs italic">Tidak ada dokumen</span>

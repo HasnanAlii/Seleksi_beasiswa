@@ -34,4 +34,9 @@ class ApplicationRequirementValue extends Model
     {
         return $this->belongsTo(Requirement::class);
     }
+
+    public function documents()
+    {
+        return $this->hasMany(ApplicationRequirementDocument::class, 'application_requirement_value_id');
+    }
 }

@@ -48,30 +48,6 @@ class AllModulesSeeder extends Seeder
                 'quota' => 50,
                 'validity_period' => '2026-12-31',
             ],
-            [
-                'scholarship_name' => 'Beasiswa Yayasan',
-                'scholarship_type_id' => $scholarshipTypeIds['Ekonomi'],
-                'quota' => 30,
-                'validity_period' => '2026-12-31',
-            ],
-            [
-                'scholarship_name' => 'Beasiswa Prestasi Akademik',
-                'scholarship_type_id' => $scholarshipTypeIds['Prestasi'],
-                'quota' => 20,
-                'validity_period' => '2026-12-31',
-            ],
-            [
-                'scholarship_name' => 'Beasiswa Peningkatan Prestasi Akademik (PPA)',
-                'scholarship_type_id' => $scholarshipTypeIds['Prestasi'],
-                'quota' => 40,
-                'validity_period' => '2026-12-31',
-            ],
-            [
-                'scholarship_name' => 'Beasiswa Tahfidz',
-                'scholarship_type_id' => $scholarshipTypeIds['Keagamaan'],
-                'quota' => 15,
-                'validity_period' => '2026-12-31',
-            ],
         ];
         foreach ($scholarships as $data) {
             $scholarshipIds[] = DB::table('scholarships')->insertGetId(array_merge($data, [

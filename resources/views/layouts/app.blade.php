@@ -317,6 +317,27 @@
 
                     const formData = new FormData(form);
 
+                    // Manually append files from Alpine documentUploadComponent instances.
+                    // This is more reliable than relying on programmatic DataTransfer assignment.
+                    form.querySelectorAll('[x-data]').forEach(function (el) {
+                        const alpineData = el._x_dataStack && el._x_dataStack[0];
+                        if (alpineData && Array.isArray(alpineData.files) && alpineData.files.length > 0) {
+                            // Find the file input inside this component to get its resolved name
+                            const fileInput = el.querySelector('input[type="file"]');
+                            if (!fileInput) return;
+                            const inputName = fileInput.name || fileInput.getAttribute('name');
+                            if (!inputName) return;
+                            // Remove any existing entry for this input from FormData (avoid duplicates)
+                            formData.delete(inputName);
+                            // Append each file individually
+                            alpineData.files.forEach(function (f) {
+                                if (f && f.file) {
+                                    formData.append(inputName, f.file, f.name);
+                                }
+                            });
+                        }
+                    });
+
                     try {
                         const response = await fetch(form.action, {
                             method: 'POST',

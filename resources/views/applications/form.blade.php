@@ -41,7 +41,7 @@
                             scholarshipRequirements: @js($scholarshipRequirements ?? []),
                             existingRequirementValues: @js(old('requirement_values', $existingRequirementValues ?? [])),
                             initialValues: @js(collect($existingRequirementValues ?? [])->mapWithKeys(fn($r) => [(string)$r['requirement_id'] => $r['applicant_value'] ?? ''])->all()),
-                            initialDocuments: @js(collect($existingRequirementValues ?? [])->filter(fn($r) => !empty($r['document_path']))->mapWithKeys(fn($r) => [(string)$r['requirement_id'] => $r['document_path']])->all()),
+                            initialDocuments: @js(collect($existingRequirementValues ?? [])->mapWithKeys(fn($r) => [(string)$r['requirement_id'] => $r['documents'] ?? []])->all()),
                             initialValidationStatuses: @js(collect($existingRequirementValues ?? [])->mapWithKeys(fn($r) => [(string)$r['requirement_id'] => $r['validation_status'] ?? 0])->all()),
                             initialValidationNotes: @js(collect($existingRequirementValues ?? [])->mapWithKeys(fn($r) => [(string)$r['requirement_id'] => $r['validation_notes'] ?? ''])->all()),
                             isEdit: {{ $application->exists ? 'true' : 'false' }},
@@ -209,86 +209,28 @@
                                                         class="w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm transition-all">
                                                 </div>
 
-                                                {{-- Upload Dokumen --}}
-                                                <div
-                                                    x-data="{
-                                                        fileName: null,
-                                                        fileSize: null,
-                                                        isDragging: false,
-                                                        existingDoc: documentsByRequirement[requirement.requirement_id] ?? null,
-                                                        handleFile(file) {
-                                                            if (!file) return;
-                                                            this.fileName = file.name;
-                                                            this.fileSize = (file.size / 1024).toFixed(1) + ' KB';
-                                                        }
-                                                    }"
-                                                >
+                                                {{-- Dokumen (read-only) --}}
+                                                <div x-data="{ docs: initialDocuments[String(requirement.requirement_id)] || [] }">
                                                     <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Dokumen</label>
-
-                                                    {{-- Tampilan dokumen lama (read-only, seperti show) --}}
-                                                    <template x-if="existingDoc">
-                                                        <div class="mb-2.5 space-y-1.5">
-                                                            {{-- <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Dokumen saat ini</p> --}}
-                                                            <a :href="`/storage/${existingDoc}`" target="_blank"
-                                                                class="inline-flex items-center gap-2 px-6 py-3.5 rounded-lg bg-blue-50 border border-blue-100 text-blue-700 hover:bg-blue-100 hover:border-blue-200 transition-all font-semibold text-xs group">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                                </svg>
-                                                                <span x-text="existingDoc.split('/').pop()" class="max-w-[150px] truncate"></span>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                                                </svg>
-                                                            </a>
-                                                        </div>
-                                                    </template>
-
-                                                    {{-- Area upload — di-comment sementara (tidak perlu ganti dokumen di edit) --}}
-                                                    {{-- <label
-                                                        :for="`doc_upload_${requirement.requirement_id}`"
-                                                        @dragover.prevent="isDragging = true"
-                                                        @dragleave.prevent="isDragging = false"
-                                                        @drop.prevent="isDragging = false; handleFile($event.dataTransfer.files[0]);"
-                                                        :class="isDragging ? 'border-blue-400 bg-blue-50' : 'border-slate-200 bg-white hover:border-blue-300 hover:bg-blue-50/30'"
-                                                        class="flex flex-col items-center justify-center gap-2 w-full rounded-xl border-2 border-dashed px-4 py-4 cursor-pointer transition-all duration-200 group"
-                                                    >
-                                                        <template x-if="!fileName">
-                                                            <div class="flex flex-col items-center gap-1.5 text-center">
-                                                                <div class="p-2 bg-slate-100 rounded-lg group-hover:bg-blue-100 transition-colors">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 group-hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                                                                    </svg>
-                                                                </div>
-                                                                <p class="text-xs text-slate-400 group-hover:text-blue-500 font-semibold transition-colors" x-text="existingDoc ? 'Klik untuk mengganti dokumen' : 'Klik atau seret file'"></p>
-                                                                <p class="text-[10px] text-slate-300">PDF, JPG, PNG, DOC &mdash; maks 5 MB</p>
-                                                            </div>
-                                                        </template>
-                                                        <template x-if="fileName">
-                                                            <div class="flex items-center gap-2.5 w-full">
-                                                                <div class="p-2 bg-blue-100 rounded-lg shrink-0">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <template x-if="docs.length > 0">
+                                                        <div class="flex flex-col gap-1.5">
+                                                            <template x-for="doc in docs" :key="doc.id">
+                                                                <a :href="`/storage/${doc.document_path}`" target="_blank"
+                                                                    class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-100 text-blue-700 hover:bg-blue-100 hover:border-blue-200 transition-all font-semibold text-xs group">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                                     </svg>
-                                                                </div>
-                                                                <div class="flex-1 min-w-0">
-                                                                    <p class="text-xs font-bold text-slate-700 truncate" x-text="fileName"></p>
-                                                                    <p class="text-[10px] text-slate-400" x-text="fileSize"></p>
-                                                                </div>
-                                                                <button type="button" @click.prevent="fileName = null; fileSize = null;" class="p-1 hover:bg-rose-50 rounded-lg transition-colors" title="Batal ganti dokumen">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-slate-400 hover:text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                                    <span class="max-w-[130px] truncate" x-text="doc.original_name"></span>
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                                                                     </svg>
-                                                                </button>
-                                                            </div>
-                                                        </template>
-                                                        <input
-                                                            type="file"
-                                                            :id="`doc_upload_${requirement.requirement_id}`"
-                                                            :name="`requirement_documents[${requirement.requirement_id}]`"
-                                                            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                                                            class="sr-only"
-                                                            @change="handleFile($event.target.files[0])"
-                                                        >
-                                                    </label> --}}
+                                                                </a>
+                                                            </template>
+                                                        </div>
+                                                    </template>
+                                                    <template x-if="docs.length === 0">
+                                                        <span class="text-slate-300 text-xs italic">Tidak ada dokumen</span>
+                                                    </template>
                                                 </div>
 
                                         @hasrole('admin|staf')
@@ -409,7 +351,7 @@
                 scholarshipRequirements: scholarshipRequirements || {},
                 existingRequirementValues: existingRequirementValues || [],
                 valuesByRequirement: initialValues || {},
-                documentsByRequirement: initialDocuments || {},
+                initialDocuments: initialDocuments || {},
                 validationStatusByRequirement: initialValidationStatuses || {},
                 validationNotesByRequirement: initialValidationNotes || {},
                 

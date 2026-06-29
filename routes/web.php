@@ -64,14 +64,14 @@ Route::middleware('auth')->group(function () {
 
 // 1. AKSES UMUM (Pengumuman & Berita)
 Route::get('announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
-Route::get('announcements/{announcement}', [AnnouncementController::class, 'show'])->name('announcements.show');
+Route::get('announcements/{announcement}', [AnnouncementController::class, 'show'])->name('announcements.show')->whereNumber('announcement');
 
 Route::get('berita', [NewsController::class, 'publicIndex'])->name('news.public_index');
 Route::get('berita/{news}', [NewsController::class, 'read'])->name('news.read');
 
 Route::middleware('auth')->group(function () {
     Route::get('news', [NewsController::class, 'index'])->name('news.index');
-    Route::get('news/{news}', [NewsController::class, 'show'])->name('news.show');
+    Route::get('news/{news}', [NewsController::class, 'show'])->name('news.show')->whereNumber('news');
 
     // 2. AKSES STAF & ADMIN (Manajemen Konten & Data Master)
     Route::middleware('role:admin|staf')->group(function () {

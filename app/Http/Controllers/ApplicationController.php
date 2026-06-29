@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Application;
+use App\Models\ApplicationRequirementDocument;
 use App\Models\ApplicationRequirementValue;
 use App\Models\Scholarship;
 use App\Models\ScholarshipRequirement;
@@ -88,7 +89,9 @@ class ApplicationController extends Controller
                 'requirement_values.*.requirement_id' => 'required|integer|exists:requirements,id',
                 'requirement_values.*.term' => 'nullable|string',
                 'requirement_values.*.applicant_value' => 'nullable|string|max:255',
-                'requirement_documents.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:5120',
+                'requirement_documents' => 'nullable|array',
+                'requirement_documents.*' => 'nullable|array',
+                'requirement_documents.*.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:5120',
             ]);
 
             $application = DB::transaction(function () use ($request, $validated, $student) {
@@ -139,7 +142,9 @@ class ApplicationController extends Controller
                 'requirement_values.*.requirement_id' => 'required|integer|exists:requirements,id',
                 'requirement_values.*.term' => 'nullable|string',
                 'requirement_values.*.applicant_value' => 'nullable|string|max:255',
-                'requirement_documents.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:5120',
+                'requirement_documents' => 'nullable|array',
+                'requirement_documents.*' => 'nullable|array',
+                'requirement_documents.*.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:5120',
             ]);
 
             $application = DB::transaction(function () use ($request, $validated) {
@@ -217,6 +222,7 @@ class ApplicationController extends Controller
             'student',
             'scholarship.requirements.requirement',
             'requirementValues.requirement',
+            'requirementValues.documents',
             'interviews.assessments',
             'selection',
         ]);
@@ -234,12 +240,18 @@ class ApplicationController extends Controller
     {
         $scholarshipRequirements = $this->scholarshipRequirementsMap();
         $existingRequirementValues = $application->requirementValues()
-            ->get(['requirement_id', 'term', 'applicant_value', 'document_path', 'validation_status', 'validation_notes'])
+            ->with('documents')
+            ->get()
             ->map(fn ($item) => [
                 'requirement_id' => $item->requirement_id,
                 'term' => $item->term,
                 'applicant_value' => $item->applicant_value,
                 'document_path' => $item->document_path,
+                'documents' => $item->documents->map(fn ($d) => [
+                    'id' => $d->id,
+                    'original_name' => $d->original_name ?? basename($d->document_path),
+                    'document_path' => $d->document_path,
+                ])->values()->all(),
                 'validation_status' => $item->validation_status,
                 'validation_notes' => $item->validation_notes,
             ])
@@ -274,7 +286,8 @@ class ApplicationController extends Controller
                 $application,
                 $validated['requirement_values'] ?? [],
                 $request->file('requirement_documents') ?? [],
-                $request->input('requirement_validations') ?? []
+                $request->input('requirement_validations') ?? [],
+                $request->input('documents_to_remove', [])
             );
         });
 
@@ -319,7 +332,9 @@ class ApplicationController extends Controller
             'requirement_values.*.requirement_id' => 'required|integer|exists:requirements,id',
             'requirement_values.*.term' => 'nullable|string',
             'requirement_values.*.applicant_value' => 'nullable|string|max:255',
-            'requirement_documents.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:5120',
+            'requirement_documents' => 'nullable|array',
+            'requirement_documents.*' => 'nullable|array',
+            'requirement_documents.*.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:5120',
             'requirement_validations' => 'nullable|array',
             'requirement_validations.*.status' => 'nullable|integer|in:0,1,2',
             'requirement_validations.*.notes' => 'nullable|string|max:1000',
@@ -356,55 +371,76 @@ class ApplicationController extends Controller
         Application $application,
         array $requirementValues,
         array $uploadedDocuments = [],
-        array $validationData = []
+        array $validationData = [],
+        array $documentsToRemove = []
     ): void {
-        // Hapus file dokumen lama dari storage sebelum di-reset
-        $application->requirementValues()->each(function ($val) {
-            if ($val->document_path) {
-                Storage::disk('public')->delete($val->document_path);
+        // 1. Hapus dokumen yang ditandai untuk dihapus
+        if (! empty($documentsToRemove)) {
+            $docs = ApplicationRequirementDocument::whereIn('id', $documentsToRemove)
+                ->whereHas('requirementValue', fn ($q) => $q->where('application_id', $application->id))
+                ->get();
+            foreach ($docs as $doc) {
+                Storage::disk('public')->delete($doc->document_path);
+                $doc->delete();
             }
-        });
-        $application->requirementValues()->delete();
+        }
 
-        $rows = collect($requirementValues)
-            ->filter(fn ($row) => filled($row['applicant_value'] ?? null) ||
-                filled($row['term'] ?? null) ||
-                isset($uploadedDocuments[$row['requirement_id']]) ||
-                isset($validationData[$row['requirement_id']])
-            )
-            ->map(function ($row) use ($application, $uploadedDocuments, $validationData) {
-                $requirementId = $row['requirement_id'];
-                $documentPath = null;
+        // 2. Ambil ARV yang sudah ada, key by requirement_id
+        $existingArvs = $application->requirementValues()->get()->keyBy('requirement_id');
 
-                if (isset($uploadedDocuments[$requirementId]) && $uploadedDocuments[$requirementId]->isValid()) {
-                    $documentPath = $uploadedDocuments[$requirementId]->store(
-                        'requirement-documents/'.$application->id,
-                        'public'
-                    );
+        foreach ($requirementValues as $row) {
+            $requirementId = (int) $row['requirement_id'];
+            $files = $uploadedDocuments[$requirementId] ?? [];
+
+            $validation = $validationData[$requirementId] ?? null;
+            $validationStatus = isset($validation['status']) ? (int) $validation['status'] : 0;
+            $validationNotes = $validation['notes'] ?? null;
+
+            if ($existingArvs->has($requirementId)) {
+                // Update ARV yang sudah ada (tidak hapus dokumen lama)
+                /** @var ApplicationRequirementValue $arv */
+                $arv = $existingArvs->get($requirementId);
+                $arv->update([
+                    'term' => $row['term'] ?? null,
+                    'applicant_value' => $row['applicant_value'] ?? null,
+                    'validation_status' => $validationStatus,
+                    'validation_notes' => $validationNotes,
+                    'validated_at' => $validationStatus > 0 ? now() : null,
+                ]);
+            } else {
+                $hasValue = filled($row['applicant_value'] ?? null)
+                    || filled($row['term'] ?? null)
+                    || ! empty($files)
+                    || isset($validationData[$requirementId]);
+
+                if (! $hasValue) {
+                    continue;
                 }
 
-                $validation = $validationData[$requirementId] ?? null;
-                $validationStatus = isset($validation['status']) ? (int) $validation['status'] : 0;
-                $validationNotes = $validation['notes'] ?? null;
-
-                return [
+                /** @var ApplicationRequirementValue $arv */
+                $arv = ApplicationRequirementValue::create([
                     'application_id' => $application->id,
                     'requirement_id' => $requirementId,
                     'term' => $row['term'] ?? null,
                     'applicant_value' => $row['applicant_value'] ?? null,
-                    'document_path' => $documentPath,
+                    'document_path' => null,
                     'validation_status' => $validationStatus,
                     'validation_notes' => $validationNotes,
                     'validated_at' => $validationStatus > 0 ? now() : null,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
-            })
-            ->values()
-            ->all();
+                ]);
+            }
 
-        if (! empty($rows)) {
-            ApplicationRequirementValue::insert($rows);
+            // Simpan file baru ke tabel documents
+            foreach ((array) $files as $file) {
+                if ($file && $file->isValid()) {
+                    $path = $file->store('requirement-documents/'.$application->id, 'public');
+                    ApplicationRequirementDocument::create([
+                        'application_requirement_value_id' => $arv->id,
+                        'document_path' => $path,
+                        'original_name' => $file->getClientOriginalName(),
+                    ]);
+                }
+            }
         }
     }
 }

@@ -20,7 +20,7 @@ class NewsController extends Controller
             })
             ->latest();
 
-        $data = $query->paginate(15)->withQueryString();
+        $data = $query->paginate(12)->withQueryString();
 
         if (request()->ajax()) {
             return response()->json(['data' => $data]);
