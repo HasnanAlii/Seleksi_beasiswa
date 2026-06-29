@@ -331,8 +331,18 @@
                             formData.delete(inputName);
                             // Append each file individually
                             alpineData.files.forEach(function (f) {
-                                if (f && f.file) {
-                                    formData.append(inputName, f.file, f.name);
+                                let fileObj = null;
+                                let fileName = '';
+                                if (f instanceof File) {
+                                    fileObj = f;
+                                    fileName = f.name;
+                                } else if (f && f.file instanceof File) {
+                                    fileObj = f.file;
+                                    fileName = f.name || f.file.name;
+                                }
+                                
+                                if (fileObj) {
+                                    formData.append(inputName, fileObj, fileName);
                                 }
                             });
                         }
